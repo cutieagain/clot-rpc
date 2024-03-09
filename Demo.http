@@ -9,4 +9,24 @@ Content-Type: application/json
   "args": [100]
 }
 
+### mock
+POST http://localhost:8080/
+Content-Type: application/json
+
+{
+  "service": "cn.cutie.clotrpc.demo.api.UserService",
+  "method": "toString",
+  "args": []
+}
+
+### 获取订单信息
+POST http://localhost:8080/
+Content-Type: application/json
+
+{
+  "service": "cn.cutie.clotrpc.demo.api.OrderService",
+  "method": "findById",
+  "args": [200]
+}
+
 ###
