@@ -3,6 +3,7 @@ package cn.cutie.clotrpc.core.provider;
 import cn.cutie.clotrpc.core.annotation.ClotProvider;
 import cn.cutie.clotrpc.core.api.RpcRequest;
 import cn.cutie.clotrpc.core.api.RpcResponse;
+import com.sun.jdi.InvocationException;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import org.springframework.context.ApplicationContext;
@@ -21,6 +22,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
     private Map<String, Object> skeleton = new HashMap<>();
 
     public RpcResponse invokeRequest(RpcRequest request) {
+        RpcResponse rpcResponse = new RpcResponse();
         Object bean = skeleton.get(request.getService());
         try {
             // 通过类的getMethod方法获取方法进行反射
@@ -28,12 +30,17 @@ public class ProviderBootstrap implements ApplicationContextAware {
 //            Method method = bean.getClass().getDeclaredMethod(request.getMethod());
             Method method = findMethod(bean.getClass(), request.getMethod());
             Object result = method.invoke(bean, request.getArgs());
-            return new RpcResponse(true, result);
-        }  catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
+            rpcResponse.setStatus(true);
+            rpcResponse.setData(result);
+            return rpcResponse;
+        } catch (InvocationTargetException e) {
+//            rpcResponse.setEx(e);
+            // 简化异常信息
+            rpcResponse.setEx(new RuntimeException(e.getTargetException().getMessage()));
         } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
+            rpcResponse.setEx(new RuntimeException(e.getMessage()));
         }
+        return rpcResponse;
     }
 
     private Method findMethod(Class<?> aClass, String methodName) {

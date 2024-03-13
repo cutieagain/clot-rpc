@@ -19,6 +19,7 @@
         <module>clot-rpc-core</module>
         <module>clot-rpc-demo-api</module>
         <module>clot-rpc-demo-provider</module>
+        <module>clot-rpc-demo-consumer</module>
     </modules>
 
     <properties>
