@@ -3,33 +3,53 @@ package cn.cutie.clotrpc.core.provider;
 import cn.cutie.clotrpc.core.annotation.ClotProvider;
 import cn.cutie.clotrpc.core.api.RpcRequest;
 import cn.cutie.clotrpc.core.api.RpcResponse;
+import cn.cutie.clotrpc.core.meta.ProviderMata;
+import cn.cutie.clotrpc.core.utils.MethodUtils;
 import com.sun.jdi.InvocationException;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.util.LinkedMultiValueMap;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Data
 public class ProviderBootstrap implements ApplicationContextAware {
 
     ApplicationContext applicationContext;
 
-    private Map<String, Object> skeleton = new HashMap<>();
+    // 方法级别的映射关系
+    private LinkedMultiValueMap<String, ProviderMata> skeleton = new LinkedMultiValueMap<>();
 
-    public RpcResponse invokeRequest(RpcRequest request) {
+    // 方法执行之前，把加了注解的服务提前加载好
+    @PostConstruct // 相当于initMethod
+    // PreDestroy  相当于destroyMethod，优雅停机的时候，注册中心服务需要在这里取消
+    public void start(){
+        Map<String, Object> providers = applicationContext.getBeansWithAnnotation(ClotProvider.class);
+        providers.forEach((x, y) -> System.out.println(x));
+        providers.values().forEach(x -> genInterface(x));
+    }
+
+    public RpcResponse invoke(RpcRequest request) {
         RpcResponse rpcResponse = new RpcResponse();
-        Object bean = skeleton.get(request.getService());
+//        Object bean = skeleton.get(request.getService());
+        List<ProviderMata> providerMatas = skeleton.get(request.getService());
         try {
+            ProviderMata providerMata = findProviderMata(providerMatas, request.getMethodSign());
+
             // 通过类的getMethod方法获取方法进行反射
 //            Method method = bean.getClass().getMethod(request.getMethod());
 //            Method method = bean.getClass().getDeclaredMethod(request.getMethod());
-            Method method = findMethod(bean.getClass(), request.getMethod());
-            Object result = method.invoke(bean, request.getArgs());
+//            Method method = findMethod(bean.getClass(), request.getMethodSign());
+//            Object result = method.invoke(bean, request.getArgs());
+            Method method = providerMata.getMethod();
+            Object result = method.invoke(providerMata.getServiceImpl(), request.getArgs());
             rpcResponse.setStatus(true);
             rpcResponse.setData(result);
             return rpcResponse;
@@ -43,6 +63,13 @@ public class ProviderBootstrap implements ApplicationContextAware {
         return rpcResponse;
     }
 
+    private ProviderMata findProviderMata(List<ProviderMata> providerMatas, String methodSign) {
+        Optional<ProviderMata> optional = providerMatas.stream()
+                .filter(x -> x.getMethodSign().equals(methodSign))
+                .findFirst();
+        return optional.orElse(null);
+    }
+
     private Method findMethod(Class<?> aClass, String methodName) {
         for (Method method : aClass.getMethods()) {
             if (method.getName().equals(methodName)){
@@ -52,18 +79,28 @@ public class ProviderBootstrap implements ApplicationContextAware {
         return null;
     }
 
-    // 方法执行之前，把加了注解的服务提前加载好
-    @PostConstruct // 相当于initMethod
-    // PreDestroy  相当于destroyMethod，优雅停机的时候，注册中心服务需要在这里取消
-    public void buildProviders(){
-        Map<String, Object> providers = applicationContext.getBeansWithAnnotation(ClotProvider.class);
-        providers.forEach((x, y) -> System.out.println(x));
-        providers.values().forEach(x -> genInterface(x));
-    }
-
     // 全限定名为key放进skeleton，好一点的判断getInterfaces是否有多个接口
     private void genInterface(Object x) {
+        // 获取一个接口
         Class<?> vInterface = x.getClass().getInterfaces()[0];
-        skeleton.put(vInterface.getCanonicalName(), x);
+        // 获取接口中所有的方法
+        Method[] methods = vInterface.getMethods();
+        for (Method method : methods) {
+            if (MethodUtils.checkLocalMethod(method)){
+                continue;
+            }
+            // 如果是符合方法解析要求的，则创建provider
+            createProvider(vInterface, x, method);
+        }
+    }
+
+    private void createProvider(Class<?> vInterface, Object x, Method method) {
+        ProviderMata providerMata = new ProviderMata();
+        providerMata.setMethod(method);
+        providerMata.setServiceImpl(x);
+        providerMata.setMethodSign(MethodUtils.methodSign(method));
+        System.out.println("create a provider: " + providerMata);
+        // 接口全限定名:providerMata
+        skeleton.add(vInterface.getCanonicalName(), providerMata);
     }
 }

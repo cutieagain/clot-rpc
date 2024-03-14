@@ -1,12 +1,22 @@
 
-### 获取用户信息
+### 获取用户信息1个参数
 POST http://localhost:8080/
 Content-Type: application/json
 
 {
   "service": "cn.cutie.clotrpc.demo.api.UserService",
-  "method": "findById",
+  "methodSign": "findById@1_int",
   "args": [100]
+}
+
+### 获取用户信息2个参数
+POST http://localhost:8080/
+Content-Type: application/json
+
+{
+  "service": "cn.cutie.clotrpc.demo.api.UserService",
+  "methodSign": "findById@2_int_java.lang.String",
+  "args": [100, "Sleep-"]
 }
 
 ### mock
@@ -15,7 +25,7 @@ Content-Type: application/json
 
 {
   "service": "cn.cutie.clotrpc.demo.api.UserService",
-  "method": "toString",
+  "methodSign": "toString",
   "args": []
 }
 
@@ -25,7 +35,7 @@ Content-Type: application/json
 
 {
   "service": "cn.cutie.clotrpc.demo.api.OrderService",
-  "method": "findById",
+  "methodSign": "findById@1_java.lang.Integer",
   "args": [200]
 }
 

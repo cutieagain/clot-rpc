@@ -29,19 +29,29 @@ public class ClotRpcDemoProviderApplication {
     // 使用HTTP + JSON来实现序列化和通信
     @RequestMapping("/")
     public RpcResponse invoke(@RequestBody RpcRequest request){
-         return providerBootstrap.invokeRequest(request);
+         return providerBootstrap.invoke(request);
     }
 
     // ApplicationRunner 会在spring容器都准备好了之后执行
     @Bean
     ApplicationRunner providerRun(){
         return x -> {
+            // 测试1个参数的方法
             RpcRequest request = new RpcRequest();
             request.setService("cn.cutie.clotrpc.demo.api.UserService");
-            request.setMethod("findById");
+            request.setMethodSign("findById@1_int");
             request.setArgs(new Object[]{100});
 
             RpcResponse rpcResponse = this.invoke(request);
+            System.out.println("return : " + rpcResponse.getData());
+
+            // 测试2个参数的方法
+            request = new RpcRequest();
+            request.setService("cn.cutie.clotrpc.demo.api.UserService");
+            request.setMethodSign("findById@2_int_java.lang.String");
+            request.setArgs(new Object[]{100, "Sleep-"});
+
+            rpcResponse = this.invoke(request);
             System.out.println("return : " + rpcResponse.getData());
         };
     }

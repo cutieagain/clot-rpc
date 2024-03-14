@@ -2,6 +2,7 @@ package cn.cutie.clotrpc.core.consumer;
 
 import cn.cutie.clotrpc.core.api.RpcRequest;
 import cn.cutie.clotrpc.core.api.RpcResponse;
+import cn.cutie.clotrpc.core.utils.MethodUtils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import okhttp3.*;
@@ -27,7 +28,7 @@ public class ClotInvocationHandler implements InvocationHandler {
         RpcRequest rpcRequest = new RpcRequest();
         // 这里没有怎么办，可以在构造函数中塞进来
         rpcRequest.setService(service.getCanonicalName());
-        rpcRequest.setMethod(method.getName());
+        rpcRequest.setMethodSign(MethodUtils.methodSign(method));
         rpcRequest.setArgs(args);
 
         // rpcRequest 作为http请求
