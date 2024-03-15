@@ -84,11 +84,11 @@ public class ClotRpcDemoConsumerApplication {
 //                System.out.println(id);
 //            }
 
-//            System.out.println(" ===> userService.getLongIds()");
-//            int[] ids = userService.getIds(new int[]{111,222,333});
-//            for (long id : ids) {
-//                System.out.println(id);
-//            }
+            System.out.println(" ===> userService.getLongIds()");
+            int[] ids = userService.getIds(new int[]{111,222,333});
+            for (long id : ids) {
+                System.out.println(id);
+            }
 
         };
     }

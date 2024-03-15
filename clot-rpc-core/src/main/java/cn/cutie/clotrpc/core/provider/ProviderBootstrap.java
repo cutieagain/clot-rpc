@@ -15,10 +15,7 @@ import org.springframework.util.LinkedMultiValueMap;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Data
 public class ProviderBootstrap implements ApplicationContextAware {
@@ -94,17 +91,20 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
     // 全限定名为key放进skeleton，好一点的判断getInterfaces是否有多个接口
     private void genInterface(Object x) {
-        // 获取一个接口
-        Class<?> vInterface = x.getClass().getInterfaces()[0];
-        // 获取接口中所有的方法
-        Method[] methods = vInterface.getMethods();
-        for (Method method : methods) {
-            if (MethodUtils.checkLocalMethod(method)){
-                continue;
+        // 获取一个接口，有可能实现多个接口
+        Arrays.stream(x.getClass().getInterfaces()).forEach(
+            vInterface ->{
+                // 获取接口中所有的方法
+                Method[] methods = vInterface.getMethods();
+                for (Method method : methods) {
+                    if (MethodUtils.checkLocalMethod(method)){
+                        continue;
+                    }
+                    // 如果是符合方法解析要求的，则创建provider
+                    createProvider(vInterface, x, method);
+                }
             }
-            // 如果是符合方法解析要求的，则创建provider
-            createProvider(vInterface, x, method);
-        }
+        );
     }
 
     private void createProvider(Class<?> vInterface, Object x, Method method) {
