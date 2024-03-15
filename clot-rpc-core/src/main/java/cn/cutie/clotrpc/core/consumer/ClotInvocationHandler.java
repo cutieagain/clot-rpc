@@ -3,11 +3,14 @@ package cn.cutie.clotrpc.core.consumer;
 import cn.cutie.clotrpc.core.api.RpcRequest;
 import cn.cutie.clotrpc.core.api.RpcResponse;
 import cn.cutie.clotrpc.core.utils.MethodUtils;
+import cn.cutie.clotrpc.core.utils.TypeUtils;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import okhttp3.*;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
@@ -34,13 +37,25 @@ public class ClotInvocationHandler implements InvocationHandler {
         // rpcRequest 作为http请求
         RpcResponse rpcResponse = this.post(rpcRequest);
         if (rpcResponse.isStatus()){
-            // 数据类型是什么？
-            // todo：课2作业 处理基本类型
-            if(rpcResponse.getData() instanceof JSONObject){
-                JSONObject jsonObject = (JSONObject) rpcResponse.getData();
+            Object data = rpcResponse.getData();
+            if(data instanceof JSONObject){
+                JSONObject jsonObject = (JSONObject) data;
                 return jsonObject.toJavaObject(method.getReturnType());
+            } else if (data instanceof JSONArray jsonArray){
+                Object[] array = jsonArray.toArray();
+                // 数组中元素的类型
+                Class<?> componentType = method.getReturnType().getComponentType(); // 元素类型
+//                Class<?> componentType2 = method.getReturnType().arrayType();// 数组类型
+                System.out.println(" ===> componentType:" + componentType);
+                // 创建一个这个类型的数组
+                Object resultArray = Array.newInstance(componentType, array.length);
+                for (int i = 0; i < array.length; i++) {
+                    Array.set(resultArray, i, array[i]);
+                }
+                return resultArray;
             } else{
-                return rpcResponse.getData();
+                // 处理基本类型
+                return TypeUtils.cast(data, method.getReturnType());
             }
         } else {
             Exception exception = rpcResponse.getEx();
@@ -52,7 +67,7 @@ public class ClotInvocationHandler implements InvocationHandler {
     }
 
     OkHttpClient client = new OkHttpClient.Builder()
-//            .connectionPool(new ConnectionPool(16, 60, TimeUnit.SECONDS)) todo:这里涉及kotlin的 internal fun的问题
+//            .connectionPool(new ConnectionPool(16, 60, TimeUnit.SECONDS)) // todo:这里涉及kotlin的 internal fun的问题
             .readTimeout(1, TimeUnit.SECONDS)
             .writeTimeout(1, TimeUnit.SECONDS)
             .connectTimeout(1, TimeUnit.SECONDS)

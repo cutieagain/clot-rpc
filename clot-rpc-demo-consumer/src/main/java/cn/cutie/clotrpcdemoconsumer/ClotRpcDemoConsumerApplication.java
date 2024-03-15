@@ -14,6 +14,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Arrays;
+
 @RestController
 @SpringBootApplication
 @Import({ConsumerConfig.class})
@@ -52,18 +54,41 @@ public class ClotRpcDemoConsumerApplication {
 //            // 异常逻辑
 //            Order order404 = orderService.findById(404);
 //            System.out.println("RPC result orderService.findById(404) = " + order404);
-
-            // 在其他component里面进行调用测试
+//
+//            // 在其他component里面进行调用测试
 //            demo2.test();
-
-            // findById 重载的方法
-//            User user = userService.findById(1, "cutie");
+//
+//            // findById 重载的方法
+//            user = userService.findById(1, "cutie");
 //            System.out.println("RPC result userService.findById(1, \"cutie\") = " + user);
+//
+//            String name1 = userService.getName();
+//            String name2 = userService.getName(123);
+//            System.out.println("name1 :" + name1);
+//            System.out.println("name2 :" + name2);
+//
+//            System.out.println(userService.getId(1L));
+//
+//            System.out.println(userService.getId(new User(100, "clot")));
+//            System.out.println(userService.getId(10f));
 
-            String name1 = userService.getName();
-            String name2 = userService.getName(123);
-            System.out.println("name1 :" + name1);
-            System.out.println("name2 :" + name2);
+//            System.out.println(Arrays.toString(userService.getIds()));
+//            System.out.println(" ===> userService.getIds()");
+//            for (int id : userService.getIds()) {
+//                System.out.println(id);
+//            }
+
+//            System.out.println(" ===> userService.getLongIds()");
+//            long[] longs = userService.getLongIds();
+//            for (long id : longs) {
+//                System.out.println(id);
+//            }
+
+//            System.out.println(" ===> userService.getLongIds()");
+//            int[] ids = userService.getIds(new int[]{111,222,333});
+//            for (long id : ids) {
+//                System.out.println(id);
+//            }
 
         };
     }

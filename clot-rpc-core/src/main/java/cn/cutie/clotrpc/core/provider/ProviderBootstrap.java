@@ -5,6 +5,7 @@ import cn.cutie.clotrpc.core.api.RpcRequest;
 import cn.cutie.clotrpc.core.api.RpcResponse;
 import cn.cutie.clotrpc.core.meta.ProviderMata;
 import cn.cutie.clotrpc.core.utils.MethodUtils;
+import cn.cutie.clotrpc.core.utils.TypeUtils;
 import com.sun.jdi.InvocationException;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
@@ -49,7 +50,8 @@ public class ProviderBootstrap implements ApplicationContextAware {
 //            Method method = findMethod(bean.getClass(), request.getMethodSign());
 //            Object result = method.invoke(bean, request.getArgs());
             Method method = providerMata.getMethod();
-            Object result = method.invoke(providerMata.getServiceImpl(), request.getArgs());
+            Object[] args = processArgs(request.getArgs(), method.getParameterTypes());
+            Object result = method.invoke(providerMata.getServiceImpl(), args);
             rpcResponse.setStatus(true);
             rpcResponse.setData(result);
             return rpcResponse;
@@ -61,6 +63,17 @@ public class ProviderBootstrap implements ApplicationContextAware {
             rpcResponse.setEx(new RuntimeException(e.getMessage()));
         }
         return rpcResponse;
+    }
+
+    // 参数类型转换为签名上的方法
+    private Object[] processArgs(Object[] args, Class<?>[] parameterTypes) {
+        if (args == null || args.length == 0) return args;
+        Object[] actuals = new Object[args.length];
+        for (int i = 0; i < args.length; i++) {
+            // 类型按照参数列表的类型转换一次
+            actuals[i] = TypeUtils.cast(args[i], parameterTypes[i]);
+        }
+        return actuals;
     }
 
     private ProviderMata findProviderMata(List<ProviderMata> providerMatas, String methodSign) {
