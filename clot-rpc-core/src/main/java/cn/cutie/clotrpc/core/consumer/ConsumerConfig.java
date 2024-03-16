@@ -1,17 +1,24 @@
 package cn.cutie.clotrpc.core.consumer;
 
 import cn.cutie.clotrpc.core.api.LoadBalance;
+import cn.cutie.clotrpc.core.api.RegistryCenter;
 import cn.cutie.clotrpc.core.api.Router;
 import cn.cutie.clotrpc.core.cluster.RandomLoadBalancer;
 import cn.cutie.clotrpc.core.cluster.RoundRobinLoadBalancer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 
+import java.util.List;
+
 @Configuration
 public class ConsumerConfig {
+
+    @Value("${clotrpc.providers}")
+    String servers;
 
     // 把ConsumerBootstrap变成一个bean放在Spring里面
     @Bean
@@ -41,6 +48,16 @@ public class ConsumerConfig {
     @Bean
     public Router router(){
         return Router.Default;
+    }
+
+    /**
+     * 需要自动初始化和销毁
+     * 与zk交互，连接初始化和停止
+     * @return
+     */
+    @Bean(initMethod = "start", destroyMethod = "stop")
+    RegistryCenter consumerRc(){
+        return new RegistryCenter.StaticRegistryCenter(List.of(servers.split(",")));
     }
 
 }

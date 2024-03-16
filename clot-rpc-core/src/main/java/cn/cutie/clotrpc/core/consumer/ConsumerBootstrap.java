@@ -2,6 +2,7 @@ package cn.cutie.clotrpc.core.consumer;
 
 import cn.cutie.clotrpc.core.annotation.ClotConsumer;
 import cn.cutie.clotrpc.core.api.LoadBalance;
+import cn.cutie.clotrpc.core.api.RegistryCenter;
 import cn.cutie.clotrpc.core.api.Router;
 import cn.cutie.clotrpc.core.api.RpcContext;
 import lombok.Data;
@@ -26,16 +27,17 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
     public void start(){
         Router router = applicationContext.getBean(Router.class);
         LoadBalance loadBalance = applicationContext.getBean(LoadBalance.class);
+        RegistryCenter registryCenter = applicationContext.getBean(RegistryCenter.class);
 
         RpcContext rpcContext = new RpcContext();
         rpcContext.setRouter(router);
         rpcContext.setLoadBalance(loadBalance);
 
-        String urls = environment.getProperty("clotrpc.providers");
-        if (urls.isEmpty()){
-            System.out.println("clotrpc providers is empty. ");
-        }
-        String[] providers = urls.split(",");
+//        String urls = environment.getProperty("clotrpc.providers");
+//        if (urls.isEmpty()){
+//            System.out.println("clotrpc providers is empty. ");
+//        }
+//        String[] providers = urls.split(",");
 
         // 创建UserService的代理类，让UserService有值
         String[] beanNames = applicationContext.getBeanDefinitionNames();
@@ -53,7 +55,8 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
                     Object consumer = stub.get(serviceName);
                     if (consumer == null){
                         // todo：动态代理，、、、4种方式
-                        consumer = this.createConsumer(service, rpcContext, List.of(providers));
+                        consumer = this.createFromRegistry(service, rpcContext, registryCenter);
+//                        consumer = this.createConsumer(service, rpcContext, List.of(providers));
                     }
                     f.setAccessible(true);
                     f.set(bean, consumer);
@@ -63,6 +66,13 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
                 }
             });
         }
+    }
+
+    private Object createFromRegistry(Class<?> service, RpcContext rpcContext, RegistryCenter registryCenter) {
+        // 处理service和consumer关系的
+        String serviceName = service.getCanonicalName();
+        List<String> providers = registryCenter.fetchAll(serviceName);
+        return this.createConsumer(service, rpcContext, providers);
     }
 
     private Object createConsumer(Class<?> service, RpcContext rpcContext, List<String> providers) {
