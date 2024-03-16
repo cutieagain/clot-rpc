@@ -1,6 +1,8 @@
 package cn.cutie.clotrpcdemoconsumer;
 
 import cn.cutie.clotrpc.core.annotation.ClotConsumer;
+import cn.cutie.clotrpc.core.api.RpcRequest;
+import cn.cutie.clotrpc.core.api.RpcResponse;
 import cn.cutie.clotrpc.core.consumer.ConsumerConfig;
 import cn.cutie.clotrpc.demo.api.Order;
 import cn.cutie.clotrpc.demo.api.OrderService;
@@ -12,6 +14,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
@@ -33,6 +37,11 @@ public class ClotRpcDemoConsumerApplication {
 
     @Autowired
     Demo2 demo2;
+
+    @RequestMapping("/findById")
+    public User findById(int id){
+        return userService.findById(id);
+    }
 
     public static void main(String[] args) {
         SpringApplication.run(ClotRpcDemoConsumerApplication.class, args);

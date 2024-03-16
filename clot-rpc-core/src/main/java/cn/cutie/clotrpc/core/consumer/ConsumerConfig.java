@@ -1,5 +1,9 @@
 package cn.cutie.clotrpc.core.consumer;
 
+import cn.cutie.clotrpc.core.api.LoadBalance;
+import cn.cutie.clotrpc.core.api.Router;
+import cn.cutie.clotrpc.core.cluster.RandomLoadBalancer;
+import cn.cutie.clotrpc.core.cluster.RoundRobinLoadBalancer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
@@ -25,6 +29,18 @@ public class ConsumerConfig {
             consumerBootstrap.start();
             System.out.println("consumerBootstrapRunner started...");
         };
+    }
+
+    @Bean
+    public LoadBalance loadBalance(){
+//        return LoadBalance.Default;
+        return new RandomLoadBalancer();
+//        return new RoundRobinLoadBalancer();
+    }
+
+    @Bean
+    public Router router(){
+        return Router.Default;
     }
 
 }

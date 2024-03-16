@@ -3,14 +3,21 @@ package cn.cutie.clotrpc.demo.provider;
 import cn.cutie.clotrpc.core.annotation.ClotProvider;
 import cn.cutie.clotrpc.demo.api.User;
 import cn.cutie.clotrpc.demo.api.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.EnvironmentAware;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 @Component
 @ClotProvider
 public class UserServiceImpl implements UserService {
+
+    @Autowired
+    Environment environment;
+
     @Override
     public User findById(int id) {
-        return new User(id, "Clot-" + System.currentTimeMillis());
+        return new User(id, "Clot-" + environment.getProperty("server.port") + "_" + System.currentTimeMillis());
     }
 
     @Override

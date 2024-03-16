@@ -1,6 +1,9 @@
+### 获取用户8088信息1个参数
+POST http://localhost:8088/findById?id=1
+
 
 ### 获取用户信息1个参数
-POST http://localhost:8080/
+POST http://localhost:8082/
 Content-Type: application/json
 
 {

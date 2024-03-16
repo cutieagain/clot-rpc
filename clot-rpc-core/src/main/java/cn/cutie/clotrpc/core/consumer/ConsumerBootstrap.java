@@ -1,35 +1,47 @@
 package cn.cutie.clotrpc.core.consumer;
 
 import cn.cutie.clotrpc.core.annotation.ClotConsumer;
+import cn.cutie.clotrpc.core.api.LoadBalance;
+import cn.cutie.clotrpc.core.api.Router;
+import cn.cutie.clotrpc.core.api.RpcContext;
 import lombok.Data;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.EnvironmentAware;
+import org.springframework.core.env.Environment;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Data
-public class ConsumerBootstrap implements ApplicationContextAware {
+public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAware {
 
     ApplicationContext applicationContext;
+
+    Environment environment;
 
     private Map<String, Object> stub = new HashMap<>();
 
     public void start(){
+        Router router = applicationContext.getBean(Router.class);
+        LoadBalance loadBalance = applicationContext.getBean(LoadBalance.class);
+
+        RpcContext rpcContext = new RpcContext();
+        rpcContext.setRouter(router);
+        rpcContext.setLoadBalance(loadBalance);
+
+        String urls = environment.getProperty("clotrpc.providers");
+        if (urls.isEmpty()){
+            System.out.println("clotrpc providers is empty. ");
+        }
+        String[] providers = urls.split(",");
+
         // 创建UserService的代理类，让UserService有值
         String[] beanNames = applicationContext.getBeanDefinitionNames();
         for (String beanName : beanNames) {
             // 初始化成功了，可以获取bean了
             Object bean = applicationContext.getBean(beanName);
-
-//            if (!beanName.contains("clotRpcDemoConsumerApplication")){ clotrpcdemoconsumer.
-//            if (!beanName.contains("ClotRpcDemoConsumerApplication")){
-//                return;
-//            }
 
             // 获取有consumer注解的field
             List<Field> fields = findAnnotatedFields(bean.getClass());
@@ -41,7 +53,7 @@ public class ConsumerBootstrap implements ApplicationContextAware {
                     Object consumer = stub.get(serviceName);
                     if (consumer == null){
                         // todo：动态代理，、、、4种方式
-                        consumer = this.createConsumer(service);
+                        consumer = this.createConsumer(service, rpcContext, List.of(providers));
                     }
                     f.setAccessible(true);
                     f.set(bean, consumer);
@@ -53,9 +65,10 @@ public class ConsumerBootstrap implements ApplicationContextAware {
         }
     }
 
-    private Object createConsumer(Class<?> service) {
+    private Object createConsumer(Class<?> service, RpcContext rpcContext, List<String> providers) {
         // 1、动态代理
-        return Proxy.newProxyInstance(service.getClassLoader(), new Class[]{service}, new ClotInvocationHandler(service));
+        return Proxy.newProxyInstance(service.getClassLoader(), new Class[]{service},
+                new ClotInvocationHandler(service, rpcContext, providers));
     }
 
     // 获取这个类中的fields
@@ -74,5 +87,4 @@ public class ConsumerBootstrap implements ApplicationContextAware {
         }
         return result;
     }
-
 }

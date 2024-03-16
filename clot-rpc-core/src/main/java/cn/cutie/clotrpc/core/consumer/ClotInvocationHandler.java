@@ -1,7 +1,6 @@
 package cn.cutie.clotrpc.core.consumer;
 
-import cn.cutie.clotrpc.core.api.RpcRequest;
-import cn.cutie.clotrpc.core.api.RpcResponse;
+import cn.cutie.clotrpc.core.api.*;
 import cn.cutie.clotrpc.core.utils.MethodUtils;
 import cn.cutie.clotrpc.core.utils.TypeUtils;
 import com.alibaba.fastjson.JSON;
@@ -13,6 +12,7 @@ import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class ClotInvocationHandler implements InvocationHandler {
@@ -21,8 +21,18 @@ public class ClotInvocationHandler implements InvocationHandler {
 
     Class<?> service;
 
-    public ClotInvocationHandler(Class<?> clazz){
+    RpcContext rpcContext;
+
+    List<String> providers;
+
+//    public ClotInvocationHandler(Class<?> clazz){
+//        this.service = clazz;
+//    }
+
+    public ClotInvocationHandler(Class<?> clazz, RpcContext rpcContext, List<String> providers) {
         this.service = clazz;
+        this.rpcContext = rpcContext;
+        this.providers = providers;
     }
 
     @Override
@@ -34,10 +44,16 @@ public class ClotInvocationHandler implements InvocationHandler {
         rpcRequest.setMethodSign(MethodUtils.methodSign(method));
         rpcRequest.setArgs(args);
 
+        // 负载均衡
+        List<String> urls = rpcContext.getRouter().route(this.providers);
+        String url = (String) rpcContext.getLoadBalance().choose(urls);
+        System.out.println(" ===> loadBalance.choose(urls): " + url);
+
         // rpcRequest 作为http请求
-        RpcResponse rpcResponse = this.post(rpcRequest);
+        RpcResponse rpcResponse = this.post(rpcRequest, url);
         if (rpcResponse.isStatus()){
             Object data = rpcResponse.getData();
+            // TODO: 2024/3/16 这里需要加类型转换，看一下？
             if(data instanceof JSONObject){
                 JSONObject jsonObject = (JSONObject) data;
                 return jsonObject.toJavaObject(method.getReturnType());
@@ -73,12 +89,13 @@ public class ClotInvocationHandler implements InvocationHandler {
             .connectTimeout(1, TimeUnit.SECONDS)
             .build();
 
-    private RpcResponse post(RpcRequest rpcRequest) {
+    private RpcResponse post(RpcRequest rpcRequest, String url) {
         // 1、OkHttpClient
         String reqJson = JSON.toJSONString(rpcRequest);
         System.out.println(" ===> reqJson = " + reqJson);
         Request request = new Request.Builder()
-                .url("http://localhost:8080/")
+//                .url("http://localhost:8080/")
+                .url(url)
                 .post(RequestBody.create(reqJson, JSONTYPE))
                 .build();
         String respJson = null;
