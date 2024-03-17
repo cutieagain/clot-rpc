@@ -1,11 +1,17 @@
 package cn.cutie.clotrpc.core.api;
 
+import cn.cutie.clotrpc.core.registry.ChangedListener;
+
 import java.util.List;
 
 /**
  * 注册中心
  */
 public interface RegistryCenter {
+
+    /*********************************************
+     *          provider侧 + consumer侧
+     *********************************************/
     void start();
 
     void stop();
@@ -25,14 +31,22 @@ public interface RegistryCenter {
     // 获取该服务所有的实例
     List<String> fetchAll(String service);
 
-    // 订阅信息
-//    void subscribe();
+    /**
+     * 订阅信息
+     * 监听
+     * @param service
+     * @param listener
+     */
+    void subscribe(String service, ChangedListener listener);
+
+    // 心跳
+//    void heartbeat();
 
 
     /**
      * 静态的注册中心
      */
-    class StaticRegistryCenter implements RegistryCenter{
+    class StaticRegistryCenter implements RegistryCenter {
 
         List<String> providers;
 
@@ -63,6 +77,11 @@ public interface RegistryCenter {
         @Override
         public List<String> fetchAll(String service) {
             return providers;
+        }
+
+        @Override
+        public void subscribe(String service, ChangedListener listener) {
+
         }
     }
 }

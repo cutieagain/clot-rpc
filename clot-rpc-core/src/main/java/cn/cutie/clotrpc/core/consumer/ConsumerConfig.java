@@ -5,6 +5,7 @@ import cn.cutie.clotrpc.core.api.RegistryCenter;
 import cn.cutie.clotrpc.core.api.Router;
 import cn.cutie.clotrpc.core.cluster.RandomLoadBalancer;
 import cn.cutie.clotrpc.core.cluster.RoundRobinLoadBalancer;
+import cn.cutie.clotrpc.core.registry.ZkRegisterCenter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
@@ -57,7 +58,8 @@ public class ConsumerConfig {
      */
     @Bean(initMethod = "start", destroyMethod = "stop")
     RegistryCenter consumerRc(){
-        return new RegistryCenter.StaticRegistryCenter(List.of(servers.split(",")));
+//        return new RegistryCenter.StaticRegistryCenter(List.of(servers.split(",")));
+        return new ZkRegisterCenter();
     }
 
 }

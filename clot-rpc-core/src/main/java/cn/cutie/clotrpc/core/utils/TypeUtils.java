@@ -32,6 +32,7 @@ public class TypeUtils {
             int length = Array.getLength(originObj);
             Object resultArray = Array.newInstance(componentType, length);
             for (int i = 0; i < length; i++) {
+                // TODO: 2024/3/17 这里需要参考修改
                 Array.set(resultArray, i, Array.get(originObj, i));
             }
             return resultArray;

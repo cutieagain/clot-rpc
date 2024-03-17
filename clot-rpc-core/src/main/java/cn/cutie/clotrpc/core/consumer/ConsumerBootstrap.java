@@ -5,6 +5,8 @@ import cn.cutie.clotrpc.core.api.LoadBalance;
 import cn.cutie.clotrpc.core.api.RegistryCenter;
 import cn.cutie.clotrpc.core.api.Router;
 import cn.cutie.clotrpc.core.api.RpcContext;
+import cn.cutie.clotrpc.core.registry.ChangedListener;
+import cn.cutie.clotrpc.core.registry.Event;
 import lombok.Data;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -14,6 +16,7 @@ import org.springframework.core.env.Environment;
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Data
 public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAware {
@@ -71,8 +74,24 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
     private Object createFromRegistry(Class<?> service, RpcContext rpcContext, RegistryCenter registryCenter) {
         // 处理service和consumer关系的
         String serviceName = service.getCanonicalName();
-        List<String> providers = registryCenter.fetchAll(serviceName);
+        List<String> providers = mapUrls(registryCenter.fetchAll(serviceName));
+        System.out.println(" ===> map to providers:");
+        providers.forEach(System.out::println);
+
+        // 获取订阅数据
+        registryCenter.subscribe(serviceName, new ChangedListener() {
+            @Override
+            public void fire(Event event) {
+                providers.clear();
+                providers.addAll(mapUrls(event.getData()));
+            }
+        });
         return this.createConsumer(service, rpcContext, providers);
+    }
+
+    private List<String> mapUrls(List<String> nodes){
+       return nodes.stream()
+                .map(x -> "http://" + x.replace("_", ":")).collect(Collectors.toList());
     }
 
     private Object createConsumer(Class<?> service, RpcContext rpcContext, List<String> providers) {
