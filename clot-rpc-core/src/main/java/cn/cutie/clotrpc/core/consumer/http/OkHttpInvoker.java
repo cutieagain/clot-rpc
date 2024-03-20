@@ -2,6 +2,7 @@ package cn.cutie.clotrpc.core.consumer.http;
 
 import cn.cutie.clotrpc.core.api.RpcRequest;
 import cn.cutie.clotrpc.core.api.RpcResponse;
+import cn.cutie.clotrpc.core.consumer.HttpInvoker;
 import com.alibaba.fastjson.JSON;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -11,7 +12,7 @@ import okhttp3.RequestBody;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-public class OkHttpInvoker implements HttpInvoker{
+public class OkHttpInvoker implements HttpInvoker {
 
     final static MediaType JSONTYPE = okhttp3.MediaType.get("application/json; charset=utf-8");
 

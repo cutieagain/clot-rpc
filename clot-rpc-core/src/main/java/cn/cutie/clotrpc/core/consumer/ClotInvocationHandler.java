@@ -3,7 +3,6 @@ package cn.cutie.clotrpc.core.consumer;
 import cn.cutie.clotrpc.core.api.RpcContext;
 import cn.cutie.clotrpc.core.api.RpcRequest;
 import cn.cutie.clotrpc.core.api.RpcResponse;
-import cn.cutie.clotrpc.core.consumer.http.HttpInvoker;
 import cn.cutie.clotrpc.core.consumer.http.OkHttpInvoker;
 import cn.cutie.clotrpc.core.utils.MethodUtils;
 import cn.cutie.clotrpc.core.utils.TypeUtils;

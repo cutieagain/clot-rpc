@@ -36,6 +36,7 @@ public class ZkRegisterCenter implements RegistryCenter {
     public void stop() {
         client.close();
         System.out.println(" ===> ZkRegisterCenter stoped");
+        // TODO: 2024/3/20 先关cache，再关client
     }
 
     @Override
