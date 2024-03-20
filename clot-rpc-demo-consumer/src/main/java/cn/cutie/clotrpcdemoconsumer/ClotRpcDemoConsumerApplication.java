@@ -56,7 +56,7 @@ public class ClotRpcDemoConsumerApplication {
     // 即cn.cutie.clotrpc.core.consumer.ConsumerConfig.consumerBootstrapRunner中的不执行了
     public ApplicationRunner consumerRunner(){
         return x ->{
-// 常规int类型，返回User对象
+            // 常规int类型，返回User对象
             System.out.println("Case 1. >>===[常规int类型，返回User对象]===");
             User user = userService.findById(1);
             System.out.println("RPC result userService.findById(1) = " + user);
@@ -105,29 +105,29 @@ public class ClotRpcDemoConsumerApplication {
             }
 
             // 测试参数和返回值都是List类型
-//            System.out.println("Case 11. >>===[测试参数和返回值都是List类型]===");
-//            List<User> list = userService.getList(List.of(
-//                    new User(100, "clot-100"),
-//                    new User(101, "clot-101")));
-//            list.forEach(System.out::println);
+            System.out.println("Case 11. >>===[测试参数和返回值都是List类型]===");
+            List<User> list = userService.getList(List.of(
+                    new User(100, "clot-100"),
+                    new User(101, "clot-101")));
+            list.forEach(System.out::println);
 
             // 测试参数和返回值都是Map类型
-//            System.out.println("Case 12. >>===[测试参数和返回值都是Map类型]===");
-//            Map<String, User> map = new HashMap<>();
-//            map.put("A200", new User(200, "clot-200"));
-//            map.put("A201", new User(201, "clot-201"));
-//            userService.getMap(map).forEach(
-//                    (k,v) -> System.out.println(k + " -> " + v)
-//            );
+            System.out.println("Case 12. >>===[测试参数和返回值都是Map类型]===");
+            Map<String, User> map = new HashMap<>();
+            map.put("A200", new User(200, "clot-200"));
+            map.put("A201", new User(201, "clot-201"));
+            userService.getMap(map).forEach(
+                    (k,v) -> System.out.println(k + " -> " + v)
+            );
 
             System.out.println("Case 13. >>===[测试参数和返回值都是Boolean/boolean类型]===");
             System.out.println("userService.getFlag(false) = " + userService.getFlag(false));
 
-//            System.out.println("Case 14. >>===[测试参数和返回值都是User[]类型]===");
-//            User[] users = new User[]{
-//                    new User(100, "clot-100"),
-//                    new User(101, "clot-101")};
-//            Arrays.stream(userService.findUsers(users)).forEach(System.out::println);
+            System.out.println("Case 14. >>===[测试参数和返回值都是User[]类型]===");
+            User[] users = new User[]{
+                    new User(100, "clot-100"),
+                    new User(101, "clot-101")};
+            Arrays.stream(userService.findUsers(users)).forEach(System.out::println);
         };
     }
 

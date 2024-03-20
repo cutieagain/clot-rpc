@@ -1,2 +1,11 @@
 server:
   port: 8082
+
+clotrpc:
+  zkServer: localhost:2181
+  zkRoot: clot-rpc
+
+app:
+  id: app1
+  namespace: public
+  env: dev

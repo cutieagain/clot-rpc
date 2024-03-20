@@ -4,7 +4,9 @@ import cn.cutie.clotrpc.core.annotation.ClotProvider;
 import cn.cutie.clotrpc.core.api.RegistryCenter;
 import cn.cutie.clotrpc.core.api.RpcRequest;
 import cn.cutie.clotrpc.core.api.RpcResponse;
+import cn.cutie.clotrpc.core.meta.InstanceMata;
 import cn.cutie.clotrpc.core.meta.ProviderMata;
+import cn.cutie.clotrpc.core.meta.ServiceMeta;
 import cn.cutie.clotrpc.core.utils.MethodUtils;
 import cn.cutie.clotrpc.core.utils.TypeUtils;
 import com.sun.jdi.InvocationException;
@@ -15,6 +17,7 @@ import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.LinkedMultiValueMap;
 
 import java.lang.reflect.InvocationTargetException;
@@ -32,18 +35,27 @@ public class ProviderBootstrap implements ApplicationContextAware {
     private String ip;
     @Value("${server.port}")
     private String port;
-    private String instance;
+    private InstanceMata instance;
 
     RegistryCenter registryCenter;
+
+    @Value("${app.id}")
+    private String app;
+    @Value("${app.namespace}")
+    private String namespace;
+    @Value("${app.env}")
+    private String env;
 
     // 方法执行之前，把加了注解的服务提前加载好
     @PostConstruct // 相当于initMethod
     @SneakyThrows
     // PreDestroy  相当于destroyMethod，优雅停机的时候，注册中心服务需要在这里取消
     public void init(){
+        // TODO: 2024/3/21 试下 findAnnotation
+//        AnnotationUtils.findAnnotation(ClotProvider.class);
         Map<String, Object> providers = applicationContext.getBeansWithAnnotation(ClotProvider.class);
         providers.forEach((x, y) -> System.out.println(x));
-        providers.values().forEach(x -> genInterface(x));
+        providers.values().forEach(this::genInterface);
 
         registryCenter = applicationContext.getBean(RegistryCenter.class);
     }
@@ -55,7 +67,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
     public void start(){
         // ip和端口构造对应实例
         ip = InetAddress.getLoopbackAddress().getHostAddress();
-        this.instance = ip + "_" + port;
+        instance = InstanceMata.http(ip, Integer.valueOf(port));
         registryCenter.start();
         skeleton.keySet().forEach(this::registerService); // 这里zk有了，但是spring还未完成，服务实际是不可用的
     }
@@ -68,7 +80,13 @@ public class ProviderBootstrap implements ApplicationContextAware {
     }
 
     private void unRegisterService(String service) {
-        registryCenter.unRegister(service, instance);
+        ServiceMeta serviceMeta = ServiceMeta.builder()
+                .name(service)
+                .app(app)
+                .namespace(namespace)
+                .env(env)
+                .build();
+        registryCenter.unRegister(serviceMeta, instance);
     }
 
     /**
@@ -76,7 +94,13 @@ public class ProviderBootstrap implements ApplicationContextAware {
      * @param service
      */
     private void registerService(String service) {
-        registryCenter.register(service, instance);
+        ServiceMeta serviceMeta = ServiceMeta.builder()
+                .name(service)
+                .app(app)
+                .namespace(namespace)
+                .env(env)
+                .build();
+        registryCenter.register(serviceMeta, instance);
     }
 
     private Method findMethod(Class<?> aClass, String methodName) {
@@ -89,28 +113,29 @@ public class ProviderBootstrap implements ApplicationContextAware {
     }
 
     // 全限定名为key放进skeleton，好一点的判断getInterfaces是否有多个接口
-    private void genInterface(Object x) {
+    private void genInterface(Object impl) {
         // 获取一个接口，有可能实现多个接口
-        Arrays.stream(x.getClass().getInterfaces()).forEach(
-            vInterface ->{
+        Arrays.stream(impl.getClass().getInterfaces()).forEach(
+            service ->{
                 // 获取接口中所有的方法
-                Method[] methods = vInterface.getMethods();
+                Method[] methods = service.getMethods();
                 for (Method method : methods) {
                     if (MethodUtils.checkLocalMethod(method)){
                         continue;
                     }
                     // 如果是符合方法解析要求的，则创建provider
-                    createProvider(vInterface, x, method);
+                    createProvider(service, impl, method);
                 }
             }
         );
     }
 
-    private void createProvider(Class<?> vInterface, Object x, Method method) {
-        ProviderMata providerMata = new ProviderMata();
-        providerMata.setMethod(method);
-        providerMata.setServiceImpl(x);
-        providerMata.setMethodSign(MethodUtils.methodSign(method));
+    private void createProvider(Class<?> vInterface, Object impl, Method method) {
+        ProviderMata providerMata = ProviderMata.builder()
+                .method(method)
+                .serviceImpl(impl)
+                .methodSign(MethodUtils.methodSign(method))
+                .build();
         System.out.println("create a provider: " + providerMata);
         // 接口全限定名:providerMata
         skeleton.add(vInterface.getCanonicalName(), providerMata);

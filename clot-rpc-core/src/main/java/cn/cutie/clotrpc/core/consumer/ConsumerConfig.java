@@ -5,6 +5,7 @@ import cn.cutie.clotrpc.core.api.RegistryCenter;
 import cn.cutie.clotrpc.core.api.Router;
 import cn.cutie.clotrpc.core.cluster.RandomLoadBalancer;
 import cn.cutie.clotrpc.core.cluster.RoundRobinLoadBalancer;
+import cn.cutie.clotrpc.core.meta.InstanceMata;
 import cn.cutie.clotrpc.core.registry.ZkRegisterCenter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,14 +41,14 @@ public class ConsumerConfig {
     }
 
     @Bean
-    public LoadBalance loadBalance(){
+    public LoadBalance<InstanceMata> loadBalance(){
 //        return LoadBalance.Default;
         return new RandomLoadBalancer();
 //        return new RoundRobinLoadBalancer();
     }
 
     @Bean
-    public Router router(){
+    public Router<InstanceMata> router(){
         return Router.Default;
     }
 

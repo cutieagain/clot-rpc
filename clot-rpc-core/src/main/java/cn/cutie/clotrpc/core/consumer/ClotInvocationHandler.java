@@ -4,6 +4,7 @@ import cn.cutie.clotrpc.core.api.RpcContext;
 import cn.cutie.clotrpc.core.api.RpcRequest;
 import cn.cutie.clotrpc.core.api.RpcResponse;
 import cn.cutie.clotrpc.core.consumer.http.OkHttpInvoker;
+import cn.cutie.clotrpc.core.meta.InstanceMata;
 import cn.cutie.clotrpc.core.utils.MethodUtils;
 import cn.cutie.clotrpc.core.utils.TypeUtils;
 import com.alibaba.fastjson.JSONArray;
@@ -26,7 +27,7 @@ public class ClotInvocationHandler implements InvocationHandler {
 
     RpcContext rpcContext;
 
-    List<String> providers;
+    List<InstanceMata> providers;
 
     HttpInvoker httpInvoker = new OkHttpInvoker();
 
@@ -34,7 +35,7 @@ public class ClotInvocationHandler implements InvocationHandler {
 //        this.service = clazz;
 //    }
 
-    public ClotInvocationHandler(Class<?> clazz, RpcContext rpcContext, List<String> providers) {
+    public ClotInvocationHandler(Class<?> clazz, RpcContext rpcContext, List<InstanceMata> providers) {
         this.service = clazz;
         this.rpcContext = rpcContext;
         this.providers = providers;
@@ -50,15 +51,15 @@ public class ClotInvocationHandler implements InvocationHandler {
         rpcRequest.setArgs(args);
 
         // 负载均衡
-        List<String> urls = rpcContext.getRouter().route(this.providers);
-        String url = (String) rpcContext.getLoadBalance().choose(urls);
-        System.out.println(" ===> loadBalance.choose(urls): " + url);
+        List<InstanceMata> instances = rpcContext.getRouter().route(this.providers);
+        InstanceMata instance = rpcContext.getLoadBalance().choose(instances);
+        System.out.println(" ===> loadBalance.choose(instances): " + instance);
 
         // rpcRequest 作为http请求
-        RpcResponse rpcResponse = httpInvoker.post(rpcRequest, url);
+        RpcResponse<?> rpcResponse = httpInvoker.post(rpcRequest, instance.toUrl());
         if (rpcResponse.isStatus()){
             Object data = rpcResponse.getData();
-            return castMethodResult(method, data);
+            return TypeUtils.castMethodResult(method, data);
         } else {
             Exception exception = rpcResponse.getEx();
 //            exception.printStackTrace();
@@ -68,27 +69,4 @@ public class ClotInvocationHandler implements InvocationHandler {
         }
     }
 
-    @Nullable
-    private static Object castMethodResult(Method method, Object data) {
-        // TODO: 2024/3/16 这里需要加类型转换，看一下？
-        if(data instanceof JSONObject){
-            JSONObject jsonObject = (JSONObject) data;
-            return jsonObject.toJavaObject(method.getReturnType());
-        } else if (data instanceof JSONArray jsonArray){
-            Object[] array = jsonArray.toArray();
-            // 数组中元素的类型
-            Class<?> componentType = method.getReturnType().getComponentType(); // 元素类型
-//                Class<?> componentType2 = method.getReturnType().arrayType();// 数组类型
-            System.out.println(" ===> componentType:" + componentType);
-            // 创建一个这个类型的数组
-            Object resultArray = Array.newInstance(componentType, array.length);
-            for (int i = 0; i < array.length; i++) {
-                Array.set(resultArray, i, array[i]);
-            }
-            return resultArray;
-        } else{
-            // 处理基本类型
-            return TypeUtils.cast(data, method.getReturnType());
-        }
-    }
 }

@@ -1,7 +1,8 @@
 package cn.cutie.clotrpc.core.api;
 
+import cn.cutie.clotrpc.core.meta.InstanceMata;
+import cn.cutie.clotrpc.core.meta.ServiceMeta;
 import cn.cutie.clotrpc.core.registry.ChangedListener;
-import org.springframework.context.annotation.DependsOn;
 
 import java.util.List;
 
@@ -21,16 +22,16 @@ public interface RegistryCenter {
      *                  provider侧
      *********************************************/
     // 自己能提供的服务注册到注册中心上
-    void register(String service, String instance);
+    void register(ServiceMeta service, InstanceMata instance);
 
     // 主动反注册，或者注册中心感知后进行反注册
-    void unRegister(String service, String instance);
+    void unRegister(ServiceMeta service, InstanceMata instance);
 
     /*********************************************
      *                  consumer侧
      *********************************************/
     // 获取该服务所有的实例
-    List<String> fetchAll(String service);
+    List<InstanceMata> fetchAll(ServiceMeta service);
 
     /**
      * 订阅信息
@@ -38,7 +39,7 @@ public interface RegistryCenter {
      * @param service
      * @param listener
      */
-    void subscribe(String service, ChangedListener listener);
+    void subscribe(ServiceMeta service, ChangedListener listener);
 
     // 心跳
 //    void heartbeat();
@@ -49,9 +50,9 @@ public interface RegistryCenter {
      */
     class StaticRegistryCenter implements RegistryCenter {
 
-        List<String> providers;
+        List<InstanceMata> providers;
 
-        public StaticRegistryCenter(List<String> providers){
+        public StaticRegistryCenter(List<InstanceMata> providers){
             this.providers = providers;
         }
 
@@ -66,22 +67,22 @@ public interface RegistryCenter {
         }
 
         @Override
-        public void register(String service, String instance) {
+        public void register(ServiceMeta service, InstanceMata instance) {
 
         }
 
         @Override
-        public void unRegister(String service, String instance) {
+        public void unRegister(ServiceMeta service, InstanceMata instance) {
 
         }
 
         @Override
-        public List<String> fetchAll(String service) {
+        public List<InstanceMata> fetchAll(ServiceMeta service) {
             return providers;
         }
 
         @Override
-        public void subscribe(String service, ChangedListener listener) {
+        public void subscribe(ServiceMeta service, ChangedListener listener) {
 
         }
     }

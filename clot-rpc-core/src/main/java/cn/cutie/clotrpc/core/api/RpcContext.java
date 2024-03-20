@@ -1,12 +1,13 @@
 package cn.cutie.clotrpc.core.api;
 
+import cn.cutie.clotrpc.core.meta.InstanceMata;
 import lombok.Data;
 
 import java.util.List;
 
 @Data
 public class RpcContext {
-    Router router;
-    LoadBalance loadBalance;
+    Router<InstanceMata> router;
+    LoadBalance<InstanceMata> loadBalance;
     List<Filter> filters; // TODO: 2024/3/16
 }

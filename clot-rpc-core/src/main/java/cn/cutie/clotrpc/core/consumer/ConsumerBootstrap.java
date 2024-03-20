@@ -5,10 +5,13 @@ import cn.cutie.clotrpc.core.api.LoadBalance;
 import cn.cutie.clotrpc.core.api.RegistryCenter;
 import cn.cutie.clotrpc.core.api.Router;
 import cn.cutie.clotrpc.core.api.RpcContext;
+import cn.cutie.clotrpc.core.meta.InstanceMata;
+import cn.cutie.clotrpc.core.meta.ServiceMeta;
 import cn.cutie.clotrpc.core.registry.ChangedListener;
 import cn.cutie.clotrpc.core.registry.Event;
 import cn.cutie.clotrpc.core.utils.MethodUtils;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
@@ -31,9 +34,16 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 
     private Map<String, Object> stub = new HashMap<>();
 
+    @Value("${app.id}")
+    private String app;
+    @Value("${app.namespace}")
+    private String namespace;
+    @Value("${app.env}")
+    private String env;
+
     public void start(){
-        Router router = applicationContext.getBean(Router.class);
-        LoadBalance loadBalance = applicationContext.getBean(LoadBalance.class);
+        Router<InstanceMata> router = applicationContext.getBean(Router.class);
+        LoadBalance<InstanceMata> loadBalance = applicationContext.getBean(LoadBalance.class);
         RegistryCenter registryCenter = applicationContext.getBean(RegistryCenter.class);
 
         RpcContext rpcContext = new RpcContext();
@@ -78,27 +88,29 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
     private Object createFromRegistry(Class<?> service, RpcContext rpcContext, RegistryCenter registryCenter) {
         // 处理service和consumer关系的
         String serviceName = service.getCanonicalName();
-        List<String> providers = mapUrls(registryCenter.fetchAll(serviceName));
+        ServiceMeta serviceMeta = ServiceMeta.builder()
+                .name(serviceName)
+                .app(app)
+                .namespace(namespace)
+                .env(env)
+                .build();
+
+        List<InstanceMata> providers = registryCenter.fetchAll(serviceMeta);
         System.out.println(" ===> map to providers:");
         providers.forEach(System.out::println);
 
         // 获取订阅数据
-        registryCenter.subscribe(serviceName, new ChangedListener() {
+        registryCenter.subscribe(serviceMeta, new ChangedListener() {
             @Override
             public void fire(Event event) {
                 providers.clear();
-                providers.addAll(mapUrls(event.getData()));
+                providers.addAll(event.getData());
             }
         });
         return this.createConsumer(service, rpcContext, providers);
     }
 
-    private List<String> mapUrls(List<String> nodes){
-       return nodes.stream()
-                .map(x -> "http://" + x.replace("_", ":")).collect(Collectors.toList());
-    }
-
-    private Object createConsumer(Class<?> service, RpcContext rpcContext, List<String> providers) {
+    private Object createConsumer(Class<?> service, RpcContext rpcContext, List<InstanceMata> providers) {
         // 1、动态代理
         return Proxy.newProxyInstance(service.getClassLoader(), new Class[]{service},
                 new ClotInvocationHandler(service, rpcContext, providers));
