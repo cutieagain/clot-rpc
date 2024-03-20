@@ -7,6 +7,7 @@ import cn.cutie.clotrpc.core.api.Router;
 import cn.cutie.clotrpc.core.api.RpcContext;
 import cn.cutie.clotrpc.core.registry.ChangedListener;
 import cn.cutie.clotrpc.core.registry.Event;
+import cn.cutie.clotrpc.core.utils.MethodUtils;
 import lombok.Data;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -49,7 +50,7 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
             Object bean = applicationContext.getBean(beanName);
 
             // 获取有consumer注解的field
-            List<Field> fields = findAnnotatedFields(bean.getClass());
+            List<Field> fields = MethodUtils.findAnnotatedFields(bean.getClass(), ClotConsumer.class);
             fields.stream().forEach( f->{
                 System.out.println(" ===> " + f.getName());
                 try {
@@ -100,20 +101,5 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
                 new ClotInvocationHandler(service, rpcContext, providers));
     }
 
-    // 获取这个类中的fields
-    private List<Field> findAnnotatedFields(Class<?> aClass) {
-        List<Field> result = new ArrayList<>();
-        while(aClass != null){
-            // 这里获取到的是spring增强后的（代理过的），所以getDeclaredFields获取不到对应的fields
-            Field[] fields = aClass.getDeclaredFields();
-            for (Field field : fields) {
-                if (field.isAnnotationPresent(ClotConsumer.class)){
-                    result.add(field);
-                }
-            }
-            // 这里是为了获取到真实那个类
-            aClass = aClass.getSuperclass();
-        }
-        return result;
-    }
+
 }
