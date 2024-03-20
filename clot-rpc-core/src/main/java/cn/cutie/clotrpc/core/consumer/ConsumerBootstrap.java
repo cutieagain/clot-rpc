@@ -19,6 +19,9 @@ import java.lang.reflect.Proxy;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * 消费端启动类
+ */
 @Data
 public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAware {
 

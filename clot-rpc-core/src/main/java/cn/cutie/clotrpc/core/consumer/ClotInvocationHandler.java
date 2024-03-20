@@ -1,29 +1,35 @@
 package cn.cutie.clotrpc.core.consumer;
 
-import cn.cutie.clotrpc.core.api.*;
+import cn.cutie.clotrpc.core.api.RpcContext;
+import cn.cutie.clotrpc.core.api.RpcRequest;
+import cn.cutie.clotrpc.core.api.RpcResponse;
+import cn.cutie.clotrpc.core.consumer.http.HttpInvoker;
+import cn.cutie.clotrpc.core.consumer.http.OkHttpInvoker;
 import cn.cutie.clotrpc.core.utils.MethodUtils;
 import cn.cutie.clotrpc.core.utils.TypeUtils;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import okhttp3.*;
+import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
+/**
+ * 消费端动态代理
+ */
 public class ClotInvocationHandler implements InvocationHandler {
 
-    final static MediaType JSONTYPE = okhttp3.MediaType.get("application/json; charset=utf-8");
+
 
     Class<?> service;
 
     RpcContext rpcContext;
 
     List<String> providers;
+
+    HttpInvoker httpInvoker = new OkHttpInvoker();
 
 //    public ClotInvocationHandler(Class<?> clazz){
 //        this.service = clazz;
@@ -50,29 +56,10 @@ public class ClotInvocationHandler implements InvocationHandler {
         System.out.println(" ===> loadBalance.choose(urls): " + url);
 
         // rpcRequest 作为http请求
-        RpcResponse rpcResponse = this.post(rpcRequest, url);
+        RpcResponse rpcResponse = httpInvoker.post(rpcRequest, url);
         if (rpcResponse.isStatus()){
             Object data = rpcResponse.getData();
-            // TODO: 2024/3/16 这里需要加类型转换，看一下？
-            if(data instanceof JSONObject){
-                JSONObject jsonObject = (JSONObject) data;
-                return jsonObject.toJavaObject(method.getReturnType());
-            } else if (data instanceof JSONArray jsonArray){
-                Object[] array = jsonArray.toArray();
-                // 数组中元素的类型
-                Class<?> componentType = method.getReturnType().getComponentType(); // 元素类型
-//                Class<?> componentType2 = method.getReturnType().arrayType();// 数组类型
-                System.out.println(" ===> componentType:" + componentType);
-                // 创建一个这个类型的数组
-                Object resultArray = Array.newInstance(componentType, array.length);
-                for (int i = 0; i < array.length; i++) {
-                    Array.set(resultArray, i, array[i]);
-                }
-                return resultArray;
-            } else{
-                // 处理基本类型
-                return TypeUtils.cast(data, method.getReturnType());
-            }
+            return castMethodResult(method, data);
         } else {
             Exception exception = rpcResponse.getEx();
 //            exception.printStackTrace();
@@ -82,32 +69,27 @@ public class ClotInvocationHandler implements InvocationHandler {
         }
     }
 
-    OkHttpClient client = new OkHttpClient.Builder()
-//            .connectionPool(new ConnectionPool(16, 60, TimeUnit.SECONDS)) // todo:这里涉及kotlin的 internal fun的问题
-            .readTimeout(1, TimeUnit.SECONDS)
-            .writeTimeout(1, TimeUnit.SECONDS)
-            .connectTimeout(1, TimeUnit.SECONDS)
-            .build();
-
-    private RpcResponse post(RpcRequest rpcRequest, String url) {
-        // 1、OkHttpClient
-        String reqJson = JSON.toJSONString(rpcRequest);
-        System.out.println(" ===> reqJson = " + reqJson);
-        Request request = new Request.Builder()
-//                .url("http://localhost:8080/")
-                .url(url)
-                .post(RequestBody.create(reqJson, JSONTYPE))
-                .build();
-        String respJson = null;
-        try {
-            respJson = client.newCall(request).execute().body().string();
-            System.out.println(" ===> respJson = " + respJson);
-            RpcResponse rpcResponse = JSON.parseObject(respJson, RpcResponse.class);
-            return rpcResponse;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    @Nullable
+    private static Object castMethodResult(Method method, Object data) {
+        // TODO: 2024/3/16 这里需要加类型转换，看一下？
+        if(data instanceof JSONObject){
+            JSONObject jsonObject = (JSONObject) data;
+            return jsonObject.toJavaObject(method.getReturnType());
+        } else if (data instanceof JSONArray jsonArray){
+            Object[] array = jsonArray.toArray();
+            // 数组中元素的类型
+            Class<?> componentType = method.getReturnType().getComponentType(); // 元素类型
+//                Class<?> componentType2 = method.getReturnType().arrayType();// 数组类型
+            System.out.println(" ===> componentType:" + componentType);
+            // 创建一个这个类型的数组
+            Object resultArray = Array.newInstance(componentType, array.length);
+            for (int i = 0; i < array.length; i++) {
+                Array.set(resultArray, i, array[i]);
+            }
+            return resultArray;
+        } else{
+            // 处理基本类型
+            return TypeUtils.cast(data, method.getReturnType());
         }
-        // 2、apache
-        // 3、URLConnection
     }
 }
