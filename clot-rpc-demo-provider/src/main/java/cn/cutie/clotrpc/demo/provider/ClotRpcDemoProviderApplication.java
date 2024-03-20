@@ -4,6 +4,7 @@ import cn.cutie.clotrpc.core.api.RpcRequest;
 import cn.cutie.clotrpc.core.api.RpcResponse;
 import cn.cutie.clotrpc.core.provider.ProviderBootstrap;
 import cn.cutie.clotrpc.core.provider.ProviderConfig;
+import cn.cutie.clotrpc.core.provider.ProviderInvoker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
@@ -24,12 +25,12 @@ public class ClotRpcDemoProviderApplication {
     }
 
     @Autowired
-    ProviderBootstrap providerBootstrap;
+    ProviderInvoker providerInvoker;
 
     // 使用HTTP + JSON来实现序列化和通信
     @RequestMapping("/")
-    public RpcResponse invoke(@RequestBody RpcRequest request){
-         return providerBootstrap.invoke(request);
+    public RpcResponse<Object> invoke(@RequestBody RpcRequest request){
+         return providerInvoker.invoke(request);
     }
 
     // ApplicationRunner 会在spring容器都准备好了之后执行
