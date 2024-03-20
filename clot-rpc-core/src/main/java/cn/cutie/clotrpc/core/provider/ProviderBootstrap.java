@@ -35,6 +35,8 @@ public class ProviderBootstrap implements ApplicationContextAware {
     private String port;
     private String instance;
 
+    RegistryCenter registryCenter;
+
     // 方法执行之前，把加了注解的服务提前加载好
     @PostConstruct // 相当于initMethod
     @SneakyThrows
@@ -44,7 +46,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
         providers.forEach((x, y) -> System.out.println(x));
         providers.values().forEach(x -> genInterface(x));
 
-
+        registryCenter = applicationContext.getBean(RegistryCenter.class);
     }
 
     /**
@@ -55,17 +57,18 @@ public class ProviderBootstrap implements ApplicationContextAware {
         // ip和端口构造对应实例
         ip = InetAddress.getLoopbackAddress().getHostAddress();
         this.instance = ip + "_" + port;
-
+        registryCenter.start();
         skeleton.keySet().forEach(this::registerService); // 这里zk有了，但是spring还未完成，服务实际是不可用的
     }
 
     @PreDestroy
     public void stop(){
+        System.out.println(" ===> unreg all service.");
         skeleton.keySet().forEach(this::unRegisterService);
+        registryCenter.stop();
     }
 
     private void unRegisterService(String service) {
-        RegistryCenter registryCenter = applicationContext.getBean(RegistryCenter.class);
         registryCenter.unRegister(service, instance);
     }
 
@@ -74,7 +77,6 @@ public class ProviderBootstrap implements ApplicationContextAware {
      * @param service
      */
     private void registerService(String service) {
-        RegistryCenter registryCenter = applicationContext.getBean(RegistryCenter.class);
         registryCenter.register(service, instance);
     }
 

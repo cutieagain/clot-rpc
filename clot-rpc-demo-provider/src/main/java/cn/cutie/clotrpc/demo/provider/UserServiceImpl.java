@@ -8,6 +8,9 @@ import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Map;
+
 @Component
 @ClotProvider
 public class UserServiceImpl implements UserService {
@@ -63,5 +66,25 @@ public class UserServiceImpl implements UserService {
     @Override
     public int[] getIds(int[] ids) {
         return ids;
+    }
+
+    @Override
+    public List<User> getList(List<User> userList) {
+        return userList;
+    }
+
+    @Override
+    public Map<String, User> getMap(Map<String, User> userMap) {
+        return userMap;
+    }
+
+    @Override
+    public Boolean getFlag(boolean flag) {
+        return !flag;
+    }
+
+    @Override
+    public User[] findUsers(User[] users) {
+        return users;
     }
 }

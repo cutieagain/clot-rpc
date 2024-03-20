@@ -1,6 +1,7 @@
 package cn.cutie.clotrpc.core.api;
 
 import cn.cutie.clotrpc.core.registry.ChangedListener;
+import org.springframework.context.annotation.DependsOn;
 
 import java.util.List;
 

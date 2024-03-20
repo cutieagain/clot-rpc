@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.annotation.Order;
 
 import java.util.List;
@@ -30,7 +31,13 @@ public class ProviderConfig {
         };
     }
 
-    @Bean(initMethod = "start", destroyMethod = "stop")
+    /***
+     * stop是在bean销毁的时候执行的
+     * 在@PreDestroy之前执行的
+     * (initMethod = "start", destroyMethod = "stop")
+     * @return
+     */
+    @Bean
     RegistryCenter providerRc(){
         return new ZkRegisterCenter();
     }
