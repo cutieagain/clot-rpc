@@ -11,6 +11,7 @@ import cn.cutie.clotrpc.core.registry.ChangedListener;
 import cn.cutie.clotrpc.core.registry.Event;
 import cn.cutie.clotrpc.core.utils.MethodUtils;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 /**
  * 消费端启动类
  */
+@Slf4j
 @Data
 public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAware {
 
@@ -52,7 +54,7 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 
 //        String urls = environment.getProperty("clotrpc.providers");
 //        if (urls.isEmpty()){
-//            System.out.println("clotrpc providers is empty. ");
+//            log.info("clotrpc providers is empty. ");
 //        }
 //        String[] providers = urls.split(",");
 
@@ -65,7 +67,7 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
             // 获取有consumer注解的field
             List<Field> fields = MethodUtils.findAnnotatedFields(bean.getClass(), ClotConsumer.class);
             fields.stream().forEach( f->{
-                System.out.println(" ===> " + f.getName());
+                log.info(" ===> " + f.getName());
                 try {
                     Class<?> service = f.getType();
                     String serviceName = service.getCanonicalName();
@@ -96,7 +98,7 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
                 .build();
 
         List<InstanceMata> providers = registryCenter.fetchAll(serviceMeta);
-        System.out.println(" ===> map to providers:");
+        log.info(" ===> map to providers:");
         providers.forEach(System.out::println);
 
         // 获取订阅数据

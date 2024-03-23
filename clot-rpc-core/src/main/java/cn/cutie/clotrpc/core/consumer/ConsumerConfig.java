@@ -7,6 +7,7 @@ import cn.cutie.clotrpc.core.cluster.RandomLoadBalancer;
 import cn.cutie.clotrpc.core.cluster.RoundRobinLoadBalancer;
 import cn.cutie.clotrpc.core.meta.InstanceMata;
 import cn.cutie.clotrpc.core.registry.ZkRegisterCenter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
@@ -16,6 +17,7 @@ import org.springframework.core.annotation.Order;
 
 import java.util.List;
 
+@Slf4j
 @Configuration
 public class ConsumerConfig {
 
@@ -34,9 +36,9 @@ public class ConsumerConfig {
     @Order(Integer.MIN_VALUE)
     public ApplicationRunner consumerBootstrapRunner(@Autowired ConsumerBootstrap consumerBootstrap){
         return x ->{
-            System.out.println("consumerBootstrapRunner starting...");
+            log.debug("consumerBootstrapRunner starting...");
             consumerBootstrap.start();
-            System.out.println("consumerBootstrapRunner started...");
+            log.debug("consumerBootstrapRunner started...");
         };
     }
 

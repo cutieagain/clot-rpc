@@ -3,6 +3,7 @@ package cn.cutie.clotrpc.core.provider;
 import cn.cutie.clotrpc.core.api.RegistryCenter;
 import cn.cutie.clotrpc.core.consumer.ConsumerBootstrap;
 import cn.cutie.clotrpc.core.registry.ZkRegisterCenter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
@@ -13,6 +14,7 @@ import org.springframework.core.annotation.Order;
 import java.util.List;
 
 @Configuration
+@Slf4j
 public class ProviderConfig {
 
     // 把ProviderBootstrap变成一个bean放在Spring里面
@@ -30,9 +32,9 @@ public class ProviderConfig {
     @Order(Integer.MIN_VALUE)
     public ApplicationRunner providerBootstrapRunner(@Autowired ProviderBootstrap providerBootstrap){
         return x ->{
-            System.out.println("providerBootstrapRunner starting...");
+            log.debug("providerBootstrapRunner starting...");
             providerBootstrap.start();
-            System.out.println("providerBootstrapRunner started...");
+            log.debug("providerBootstrapRunner started...");
         };
     }
 

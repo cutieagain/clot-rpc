@@ -4,13 +4,18 @@ import cn.cutie.clotrpc.core.annotation.ClotProvider;
 import cn.cutie.clotrpc.demo.api.User;
 import cn.cutie.clotrpc.demo.api.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 
+
+/**
+ *
+ * 目前是两个注解：@Component，@ClotProvider，但是Dubbo只需要一个注解
+ * todo：可以使用spring注册bean的方式，只使用一个注解
+ */
 @Component
 @ClotProvider
 public class UserServiceImpl implements UserService {

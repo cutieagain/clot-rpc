@@ -7,11 +7,8 @@ import cn.cutie.clotrpc.core.consumer.http.OkHttpInvoker;
 import cn.cutie.clotrpc.core.meta.InstanceMata;
 import cn.cutie.clotrpc.core.utils.MethodUtils;
 import cn.cutie.clotrpc.core.utils.TypeUtils;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import org.jetbrains.annotations.Nullable;
+import lombok.extern.slf4j.Slf4j;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -19,6 +16,7 @@ import java.util.List;
 /**
  * 消费端动态代理
  */
+@Slf4j
 public class ClotInvocationHandler implements InvocationHandler {
 
 
@@ -53,7 +51,7 @@ public class ClotInvocationHandler implements InvocationHandler {
         // 负载均衡
         List<InstanceMata> instances = rpcContext.getRouter().route(this.providers);
         InstanceMata instance = rpcContext.getLoadBalance().choose(instances);
-        System.out.println(" ===> loadBalance.choose(instances): " + instance);
+        log.debug(" ===> loadBalance.choose(instances): " + instance);
 
         // rpcRequest 作为http请求
         RpcResponse<?> rpcResponse = httpInvoker.post(rpcRequest, instance.toUrl());
@@ -63,7 +61,7 @@ public class ClotInvocationHandler implements InvocationHandler {
         } else {
             Exception exception = rpcResponse.getEx();
 //            exception.printStackTrace();
-//            System.out.println("===> " + exception);
+//            log.debug("===> " + exception);
             // 服务端的异常传递到客户端中
             throw new RuntimeException(exception);
         }

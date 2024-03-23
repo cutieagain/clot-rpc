@@ -5,6 +5,7 @@ import cn.cutie.clotrpc.core.api.RpcResponse;
 import cn.cutie.clotrpc.core.provider.ProviderBootstrap;
 import cn.cutie.clotrpc.core.provider.ProviderConfig;
 import cn.cutie.clotrpc.core.provider.ProviderInvoker;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @SpringBootApplication
 @RestController
 @Import({ProviderConfig.class})
+@Slf4j
 public class ClotRpcDemoProviderApplication {
 
     public static void main(String[] args) {
@@ -44,7 +46,7 @@ public class ClotRpcDemoProviderApplication {
             request.setArgs(new Object[]{100});
 
             RpcResponse rpcResponse = this.invoke(request);
-            System.out.println("return : " + rpcResponse.getData());
+            log.info("return : " + rpcResponse.getData());
 
             // 测试2个参数的方法
             request = new RpcRequest();
@@ -53,7 +55,7 @@ public class ClotRpcDemoProviderApplication {
             request.setArgs(new Object[]{100, "Sleep-"});
 
             rpcResponse = this.invoke(request);
-            System.out.println("return : " + rpcResponse.getData());
+            log.info("return : " + rpcResponse.getData());
         };
     }
 

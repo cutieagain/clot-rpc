@@ -14,6 +14,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.Data;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -25,6 +26,7 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.util.*;
 
+@Slf4j
 @Data
 public class ProviderBootstrap implements ApplicationContextAware {
 
@@ -54,7 +56,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
         // TODO: 2024/3/21 试下 findAnnotation
 //        AnnotationUtils.findAnnotation(ClotProvider.class);
         Map<String, Object> providers = applicationContext.getBeansWithAnnotation(ClotProvider.class);
-        providers.forEach((x, y) -> System.out.println(x));
+        providers.forEach((x, y) -> log.info(x));
         providers.values().forEach(this::genInterface);
 
         registryCenter = applicationContext.getBean(RegistryCenter.class);
@@ -74,7 +76,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
     @PreDestroy
     public void stop(){
-        System.out.println(" ===> unreg all service.");
+        log.info(" ===> unreg all service.");
         skeleton.keySet().forEach(this::unRegisterService);
         registryCenter.stop();
     }
@@ -136,7 +138,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
                 .serviceImpl(impl)
                 .methodSign(MethodUtils.methodSign(method))
                 .build();
-        System.out.println("create a provider: " + providerMata);
+        log.info("create a provider: " + providerMata);
         // 接口全限定名:providerMata
         skeleton.add(vInterface.getCanonicalName(), providerMata);
     }
