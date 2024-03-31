@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
@@ -44,7 +45,7 @@ public class ClotRpcDemoConsumerApplication {
     Demo2 demo2;
 
     @RequestMapping("/findById")
-    public User findById(int id){
+    public User findById(@RequestParam("id") int id){
         return userService.findById(id);
     }
 

@@ -5,10 +5,7 @@ import cn.cutie.clotrpc.core.api.RpcResponse;
 import cn.cutie.clotrpc.core.consumer.HttpInvoker;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
+import okhttp3.*;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -22,7 +19,8 @@ public class OkHttpInvoker implements HttpInvoker {
 
     public OkHttpInvoker() {
         client = new OkHttpClient.Builder()
-//            .connectionPool(new ConnectionPool(16, 60, TimeUnit.SECONDS)) // todo:这里涉及kotlin的 internal fun的问题
+                // todo:这里涉及kotlin的 internal fun的问题，不使用连接池的花性能下降很多
+                .connectionPool(new ConnectionPool(16, 60, TimeUnit.SECONDS))
                 .readTimeout(1, TimeUnit.SECONDS)
                 .writeTimeout(1, TimeUnit.SECONDS)
                 .connectTimeout(1, TimeUnit.SECONDS)

@@ -32,9 +32,9 @@ public class ProviderConfig {
     @Order(Integer.MIN_VALUE)
     public ApplicationRunner providerBootstrapRunner(@Autowired ProviderBootstrap providerBootstrap){
         return x ->{
-            log.debug("providerBootstrapRunner starting...");
+            log.info("providerBootstrapRunner starting...");
             providerBootstrap.start();
-            log.debug("providerBootstrapRunner started...");
+            log.info("providerBootstrapRunner started...");
         };
     }
 

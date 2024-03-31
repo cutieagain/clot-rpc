@@ -36,9 +36,9 @@ public class ConsumerConfig {
     @Order(Integer.MIN_VALUE)
     public ApplicationRunner consumerBootstrapRunner(@Autowired ConsumerBootstrap consumerBootstrap){
         return x ->{
-            log.debug("consumerBootstrapRunner starting...");
+            log.info("consumerBootstrapRunner starting...");
             consumerBootstrap.start();
-            log.debug("consumerBootstrapRunner started...");
+            log.info("consumerBootstrapRunner started...");
         };
     }
 

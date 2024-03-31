@@ -99,7 +99,7 @@ public class ZkRegisterCenter implements RegistryCenter {
         try {
             // 获取所有子节点
             List<String> nodes = client.getChildren().forPath(servicePath);
-            log.debug(" ===> fetchAll from zk:" + servicePath);
+            log.info(" ===> fetchAll from zk:" + servicePath);
             nodes.forEach(System.out::println);
             return mapInstance(nodes);
         } catch (Exception e) {
@@ -127,7 +127,7 @@ public class ZkRegisterCenter implements RegistryCenter {
         cache.getListenable().addListener(
                 (curator, event) -> {
                     // 有任何节点变动，这里会执行
-                    log.debug("zk subscribe event: " + event);
+                    log.info("zk subscribe event: " + event);
                     List<InstanceMata> nodes = fetchAll(service);
                     listener.fire(new Event(nodes));
                 }

@@ -11,6 +11,9 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 
+/**
+ * 类型转换工具类
+ */
 @Slf4j
 public class TypeUtils {
     public static Object cast(Object origin, Class<?> type){
@@ -75,7 +78,7 @@ public class TypeUtils {
             if (Map.class.isAssignableFrom(type)) {
                 Map resultMap = new HashMap();
                 Type genericReturnType = method.getGenericReturnType();
-                log.debug("", genericReturnType);
+                log.debug(genericReturnType.toString());
                 if (genericReturnType instanceof ParameterizedType parameterizedType) {
                     Class<?> keyType = (Class<?>)parameterizedType.getActualTypeArguments()[0];
                     Class<?> valueType = (Class<?>)parameterizedType.getActualTypeArguments()[1];
@@ -109,10 +112,10 @@ public class TypeUtils {
             } else if (List.class.isAssignableFrom(type)) {
                 List<Object> resultList = new ArrayList<>(array.length);
                 Type genericReturnType = method.getGenericReturnType();
-                log.debug("", genericReturnType);
+                log.debug(genericReturnType.toString());
                 if (genericReturnType instanceof ParameterizedType parameterizedType) {
                     Type actualType = parameterizedType.getActualTypeArguments()[0];
-                    log.debug("", actualType);
+                    log.debug(actualType.toString());
                     for (Object o : array) {
                         resultList.add(cast(o, (Class<?>) actualType));
                     }
