@@ -7,6 +7,7 @@ import cn.cutie.clotrpc.core.api.Router;
 import cn.cutie.clotrpc.core.cluster.RandomLoadBalancer;
 import cn.cutie.clotrpc.core.cluster.RoundRobinLoadBalancer;
 import cn.cutie.clotrpc.core.filter.CacheFilter;
+import cn.cutie.clotrpc.core.filter.MockFilter;
 import cn.cutie.clotrpc.core.meta.InstanceMata;
 import cn.cutie.clotrpc.core.registry.ZkRegisterCenter;
 import lombok.extern.slf4j.Slf4j;
@@ -69,8 +70,8 @@ public class ConsumerConfig {
 
     @Bean
     public Filter filter(){
-//        return new RegistryCenter.StaticRegistryCenter(List.of(servers.split(",")));
         return new CacheFilter();
+//        return new MockFilter();
     }
 
 }

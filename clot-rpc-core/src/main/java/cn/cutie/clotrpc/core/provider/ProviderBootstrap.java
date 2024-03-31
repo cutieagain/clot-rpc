@@ -119,15 +119,18 @@ public class ProviderBootstrap implements ApplicationContextAware {
         // 获取一个接口，有可能实现多个接口
         Arrays.stream(impl.getClass().getInterfaces()).forEach(
             service ->{
-                // 获取接口中所有的方法
-                Method[] methods = service.getMethods();
-                for (Method method : methods) {
-                    if (MethodUtils.checkLocalMethod(method)){
-                        continue;
-                    }
-                    // 如果是符合方法解析要求的，则创建provider
-                    createProvider(service, impl, method);
-                }
+//                // 获取接口中所有的方法
+//                Method[] methods = service.getMethods();
+//                for (Method method : methods) {
+//                    if (MethodUtils.checkLocalMethod(method)){
+//                        continue;
+//                    }
+//                    // 如果是符合方法解析要求的，则创建provider
+//                    createProvider(service, impl, method);
+//                }
+                Arrays.stream(service.getMethods())
+                        .filter(method -> !MethodUtils.checkLocalMethod(method))
+                        .forEach(method -> createProvider(service, impl, method));
             }
         );
     }
