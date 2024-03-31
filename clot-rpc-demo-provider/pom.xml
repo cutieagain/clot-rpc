@@ -8,7 +8,6 @@
         <version>0.0.1-SNAPSHOT</version>
         <relativePath>../../clot-rpc</relativePath> <!-- lookup parent from repository -->
     </parent>
-    <groupId>cn.cutie</groupId>
     <artifactId>clot-rpc-demo-provider</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>clot-rpc-demo-provider</name>

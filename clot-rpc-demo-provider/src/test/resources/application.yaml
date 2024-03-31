@@ -1,10 +1,9 @@
 server:
-  port: 8089
+  port: 8082
+
 clotrpc:
-  providers: http://localhost:8081, http://localhost:8082
   zkServer: localhost:2182
   zkRoot: clot-rpc
-
 
 app:
   id: app1
@@ -14,4 +13,4 @@ app:
 logging:
   level:
     root: info
-    cn.cutie.clotrpc: debug
+    cn.cutie.clotrpc: error

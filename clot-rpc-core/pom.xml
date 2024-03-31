@@ -54,6 +54,12 @@
             <artifactId>curator-recipes</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-test</artifactId>
+            <version>5.1.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>
