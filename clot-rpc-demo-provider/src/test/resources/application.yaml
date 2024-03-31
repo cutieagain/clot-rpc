@@ -13,4 +13,4 @@ app:
 logging:
   level:
     root: info
-    cn.cutie.clotrpc: error
+    cn.cutie.clotrpc: debug
