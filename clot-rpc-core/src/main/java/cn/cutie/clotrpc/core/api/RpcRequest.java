@@ -1,7 +1,9 @@
 package cn.cutie.clotrpc.core.api;
 
 import lombok.Data;
+import lombok.ToString;
 
+@ToString
 @Data
 public class RpcRequest {
     // 调用的服务的信息

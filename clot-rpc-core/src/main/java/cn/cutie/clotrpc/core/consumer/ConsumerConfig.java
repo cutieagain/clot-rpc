@@ -1,10 +1,12 @@
 package cn.cutie.clotrpc.core.consumer;
 
+import cn.cutie.clotrpc.core.api.Filter;
 import cn.cutie.clotrpc.core.api.LoadBalance;
 import cn.cutie.clotrpc.core.api.RegistryCenter;
 import cn.cutie.clotrpc.core.api.Router;
 import cn.cutie.clotrpc.core.cluster.RandomLoadBalancer;
 import cn.cutie.clotrpc.core.cluster.RoundRobinLoadBalancer;
+import cn.cutie.clotrpc.core.filter.CacheFilter;
 import cn.cutie.clotrpc.core.meta.InstanceMata;
 import cn.cutie.clotrpc.core.registry.ZkRegisterCenter;
 import lombok.extern.slf4j.Slf4j;
@@ -60,9 +62,15 @@ public class ConsumerConfig {
      * @return
      */
     @Bean(initMethod = "start", destroyMethod = "stop")
-    RegistryCenter consumerRc(){
+    public RegistryCenter consumerRc(){
 //        return new RegistryCenter.StaticRegistryCenter(List.of(servers.split(",")));
         return new ZkRegisterCenter();
+    }
+
+    @Bean
+    public Filter filter(){
+//        return new RegistryCenter.StaticRegistryCenter(List.of(servers.split(",")));
+        return new CacheFilter();
     }
 
 }

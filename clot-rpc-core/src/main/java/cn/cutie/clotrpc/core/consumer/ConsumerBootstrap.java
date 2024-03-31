@@ -1,10 +1,7 @@
 package cn.cutie.clotrpc.core.consumer;
 
 import cn.cutie.clotrpc.core.annotation.ClotConsumer;
-import cn.cutie.clotrpc.core.api.LoadBalance;
-import cn.cutie.clotrpc.core.api.RegistryCenter;
-import cn.cutie.clotrpc.core.api.Router;
-import cn.cutie.clotrpc.core.api.RpcContext;
+import cn.cutie.clotrpc.core.api.*;
 import cn.cutie.clotrpc.core.meta.InstanceMata;
 import cn.cutie.clotrpc.core.meta.ServiceMeta;
 import cn.cutie.clotrpc.core.registry.ChangedListener;
@@ -47,10 +44,12 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
         Router<InstanceMata> router = applicationContext.getBean(Router.class);
         LoadBalance<InstanceMata> loadBalance = applicationContext.getBean(LoadBalance.class);
         RegistryCenter registryCenter = applicationContext.getBean(RegistryCenter.class);
+        List<Filter> filters = applicationContext.getBeansOfType(Filter.class).values().stream().toList();
 
         RpcContext rpcContext = new RpcContext();
         rpcContext.setRouter(router);
         rpcContext.setLoadBalance(loadBalance);
+        rpcContext.setFilters(filters);
 
 //        String urls = environment.getProperty("clotrpc.providers");
 //        if (urls.isEmpty()){
