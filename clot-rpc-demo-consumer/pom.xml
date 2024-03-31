@@ -12,9 +12,7 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>clot-rpc-demo-consumer</name>
     <description>clot-rpc-demo-consumer</description>
-    <properties>
-        <java.version>17</java.version>
-    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -31,7 +29,6 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
 
         <dependency>
             <groupId>cn.cutie</groupId>
