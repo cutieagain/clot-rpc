@@ -1,4 +1,4 @@
-package cn.cutie.clotrpcdemoconsumer;
+package cn.cutie.clotrpc.demo.consumer;
 
 import cn.cutie.clotrpc.core.annotation.ClotConsumer;
 import cn.cutie.clotrpc.demo.api.User;

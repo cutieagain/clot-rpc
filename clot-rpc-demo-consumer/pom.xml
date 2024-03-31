@@ -13,6 +13,7 @@
     <name>clot-rpc-demo-consumer</name>
     <description>clot-rpc-demo-consumer</description>
 
+    <!-- 这个可以放父pom里面 -->
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -52,6 +53,12 @@
             <artifactId>clot-rpc-core</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>cn.cutie</groupId>
+            <artifactId>clot-rpc-demo-provider</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 
@@ -60,6 +67,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${springboot.version}</version>
                 <configuration>
                     <excludes>
                         <exclude>
@@ -80,7 +88,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.2.3</version>
+                <version>${springboot.version}</version>
                 <dependencies>
                     <dependency>
                         <groupId>org.apache.maven.surefire</groupId>
