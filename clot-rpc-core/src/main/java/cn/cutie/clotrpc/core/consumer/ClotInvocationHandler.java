@@ -1,9 +1,6 @@
 package cn.cutie.clotrpc.core.consumer;
 
-import cn.cutie.clotrpc.core.api.Filter;
-import cn.cutie.clotrpc.core.api.RpcContext;
-import cn.cutie.clotrpc.core.api.RpcRequest;
-import cn.cutie.clotrpc.core.api.RpcResponse;
+import cn.cutie.clotrpc.core.api.*;
 import cn.cutie.clotrpc.core.consumer.http.OkHttpInvoker;
 import cn.cutie.clotrpc.core.meta.InstanceMata;
 import cn.cutie.clotrpc.core.utils.MethodUtils;
@@ -85,10 +82,12 @@ public class ClotInvocationHandler implements InvocationHandler {
         if (rpcResponse.isStatus()){
             return TypeUtils.castMethodResult(method, rpcResponse.getData());
         } else {
-//            exception.printStackTrace();
-//            log.debug("===> " + exception);
-            // 服务端的异常传递到客户端中
-            throw new RuntimeException(rpcResponse.getEx());
+            Exception exception = rpcResponse.getEx();
+            if (exception instanceof RpcException ex){
+                throw ex;
+            }
+            // 换成自定义异常
+            throw new RpcException(exception, RpcException.UnknownEx);
         }
     }
 

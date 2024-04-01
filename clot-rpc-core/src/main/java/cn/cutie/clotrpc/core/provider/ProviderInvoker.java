@@ -1,10 +1,10 @@
 package cn.cutie.clotrpc.core.provider;
 
+import cn.cutie.clotrpc.core.api.RpcException;
 import cn.cutie.clotrpc.core.api.RpcRequest;
 import cn.cutie.clotrpc.core.api.RpcResponse;
 import cn.cutie.clotrpc.core.meta.ProviderMata;
 import cn.cutie.clotrpc.core.utils.TypeUtils;
-import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import java.lang.reflect.InvocationTargetException;
@@ -42,9 +42,9 @@ public class ProviderInvoker {
         } catch (InvocationTargetException e) {
 //            rpcResponse.setEx(e);
             // 简化异常信息
-            rpcResponse.setEx(new RuntimeException(e.getTargetException().getMessage()));
+            rpcResponse.setEx(new RpcException(e.getTargetException().getMessage()));
         } catch (IllegalAccessException e) {
-            rpcResponse.setEx(new RuntimeException(e.getMessage()));
+            rpcResponse.setEx(new RpcException(e.getMessage()));
         }
         return rpcResponse;
     }

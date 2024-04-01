@@ -1,6 +1,7 @@
 package cn.cutie.clotrpc.core.registry;
 
 import cn.cutie.clotrpc.core.api.RegistryCenter;
+import cn.cutie.clotrpc.core.api.RpcException;
 import cn.cutie.clotrpc.core.meta.InstanceMata;
 import cn.cutie.clotrpc.core.meta.ServiceMeta;
 import lombok.SneakyThrows;
@@ -71,7 +72,7 @@ public class ZkRegisterCenter implements RegistryCenter {
 
             log.info(" ===> register to zk:" + instancePath);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RpcException(e);
         }
     }
 
@@ -89,7 +90,7 @@ public class ZkRegisterCenter implements RegistryCenter {
 
             log.info(" ===> unRegister to zk:" + instancePath);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RpcException(e);
         }
     }
 
@@ -103,7 +104,7 @@ public class ZkRegisterCenter implements RegistryCenter {
             nodes.forEach(System.out::println);
             return mapInstance(nodes);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RpcException(e);
         }
     }
 
