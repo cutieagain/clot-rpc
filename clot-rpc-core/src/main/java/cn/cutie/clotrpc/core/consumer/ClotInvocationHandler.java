@@ -2,6 +2,7 @@ package cn.cutie.clotrpc.core.consumer;
 
 import cn.cutie.clotrpc.core.api.*;
 import cn.cutie.clotrpc.core.consumer.http.OkHttpInvoker;
+import cn.cutie.clotrpc.core.governance.SlidingTimeWindow;
 import cn.cutie.clotrpc.core.meta.InstanceMata;
 import cn.cutie.clotrpc.core.utils.MethodUtils;
 import cn.cutie.clotrpc.core.utils.TypeUtils;
@@ -11,7 +12,13 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 消费端动态代理
@@ -23,9 +30,19 @@ public class ClotInvocationHandler implements InvocationHandler {
 
     RpcContext rpcContext;
 
-    List<InstanceMata> providers;
+    final List<InstanceMata> providers;
+
+    // 隔离的provider
+    List<InstanceMata> isolatedProviders = new ArrayList<>();
+    // 半开的provider
+    final List<InstanceMata> halfOpenProviders = new ArrayList<>();
 
     HttpInvoker httpInvoker;
+
+    // 单位时间内出现了n次故障算失败，滑动时间窗口，e.g.30s内出现10次
+    Map<String, SlidingTimeWindow> windows = new HashMap<>();
+
+    ScheduledExecutorService executor;
 
 //    public ClotInvocationHandler(Class<?> clazz){
 //        this.service = clazz;
@@ -37,7 +54,17 @@ public class ClotInvocationHandler implements InvocationHandler {
         this.providers = providers;
         int timeout = Integer.parseInt(rpcContext.getParameters()
                 .getOrDefault("app.timeout", "1000"));
-        httpInvoker = new OkHttpInvoker(timeout);
+        this.httpInvoker = new OkHttpInvoker(timeout);
+        this.executor = Executors.newScheduledThreadPool(1);
+        this.executor.scheduleWithFixedDelay(this::halfOpen, 10, 60, TimeUnit.SECONDS);
+
+    }
+
+    private void halfOpen() {
+        log.debug(" ===> half open isolatedProviders: {}", isolatedProviders);
+        // 需要清除，不然会重复
+        this.halfOpenProviders.clear();
+        this.halfOpenProviders.addAll(isolatedProviders);
     }
 
     @Override
@@ -70,13 +97,52 @@ public class ClotInvocationHandler implements InvocationHandler {
                     }
                 }
 
-                // 负载均衡
-                List<InstanceMata> instances = rpcContext.getRouter().route(this.providers);
-                InstanceMata instance = rpcContext.getLoadBalance().choose(instances);
-                log.debug(" ===> loadBalance.choose(instances): " + instance);
+                InstanceMata instance;
+                synchronized (halfOpenProviders){
+                    // 如果半开为空，走原来的逻辑
+                    if (halfOpenProviders.isEmpty()){
+                        // 负载均衡
+                        List<InstanceMata> instances = rpcContext.getRouter().route(this.providers);
+                        instance = rpcContext.getLoadBalance().choose(instances);
+                        log.debug(" ===> loadBalance.choose(instances): " + instance);
+                    } else {
+                        // 半开需要探活
+                        instance = halfOpenProviders.remove(0);
+                        log.debug(" ===> check alive instance: {}", instance);
+                    }
+                }
 
-                // rpcRequest 作为http请求
-                RpcResponse<?> rpcResponse = httpInvoker.post(rpcRequest, instance.toUrl());
+                RpcResponse<?> rpcResponse;
+                String url = instance.toUrl();
+                try{
+                    // rpcRequest 作为http请求
+                    rpcResponse = httpInvoker.post(rpcRequest, url);
+                } catch (Exception e){
+                    // 故障规则统计和隔离
+                    // 每一次异常记录依次，统计30s内的异常数
+                    SlidingTimeWindow window = windows.get(url);
+                    if (window == null){
+                        window = new SlidingTimeWindow();
+                        windows.put(url, window);
+                    }
+                    window.record(System.currentTimeMillis());
+                    log.debug(" ===> instance {} in window with {}", url, window.getSum());
+                    // 发生了10次就进行故障隔离
+                    if (window.getSum() >= 10){
+                        isolate(instance);
+                    }
+                    throw e;
+                }
+
+                synchronized (providers){
+                    // 如果这次是探活的请求，即正常的provider列表中不包含当前请求的provider实例
+                    if (!providers.contains(instance)){
+                        log.debug(" ===> instance {} is recovered, isolatedProviders: {}, providers: {}",
+                                instance, isolatedProviders, providers);
+                        isolatedProviders.remove(instance);
+                        providers.add(instance);
+                    }
+                }
 
                 // TODO: 2024/3/31 这里拿到的可能不是最终值，需要对cache进行排序，放最后执行
                 for (Filter filter : this.rpcContext.getFilters()) {
@@ -92,6 +158,20 @@ public class ClotInvocationHandler implements InvocationHandler {
             }
         }
         return null;
+    }
+
+    /**
+     * 隔离实例
+     * @param instance
+     */
+    private void isolate(InstanceMata instance) {
+        log.debug(" ===> isolate instance: {}", instance);
+        // 从provider中移除
+        providers.remove(instance);
+        log.debug(" ===> providers: {}", providers);
+        // 并添加进被隔离的provider列表，下次恢复使用
+        isolatedProviders.add(instance);
+        log.debug(" ===> isolatedProviders: {}", isolatedProviders);
     }
 
     @Nullable
