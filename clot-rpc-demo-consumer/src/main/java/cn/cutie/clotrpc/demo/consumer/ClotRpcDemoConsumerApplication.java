@@ -45,6 +45,11 @@ public class ClotRpcDemoConsumerApplication {
         return userService.findById(id);
     }
 
+    @RequestMapping("/find")
+    public User find(@RequestParam("timeout") int timeout){
+        return userService.find(timeout);
+    }
+
     public static void main(String[] args) {
         SpringApplication.run(ClotRpcDemoConsumerApplication.class, args);
     }
@@ -148,6 +153,15 @@ public class ClotRpcDemoConsumerApplication {
         } catch (RuntimeException e) {
             log.info((" ===> exception: " + e.getMessage()));
         }
+
+        log.info("Case 18. >>===[测试服务端抛出一个超时重试后成功的场景]===");
+        // 超时设置的【漏斗原则】
+        // A 2000 -> B 1500 -> C 1200 -> D 1000
+        long start = System.currentTimeMillis();
+        userService.find(1100);
+        userService.find(1100);
+        log.info("userService.find take "
+                + (System.currentTimeMillis()-start) + " ms");
     }
 
 }

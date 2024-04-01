@@ -70,7 +70,8 @@ public class ConsumerConfig {
 
     @Bean
     public Filter filter(){
-        return new CacheFilter();
+        return Filter.Default;
+//        return new CacheFilter();
 //        return new MockFilter();
     }
 

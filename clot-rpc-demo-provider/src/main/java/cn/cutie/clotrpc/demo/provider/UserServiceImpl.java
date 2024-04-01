@@ -95,12 +95,25 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findById(long id) {
-        return new User(Long.valueOf(id).intValue(), "KK");
+        return new User(Long.valueOf(id).intValue(), "Clot");
     }
 
     @Override
     public User ex(boolean flag) {
         if(flag) throw new RuntimeException("just throw an exception");
         return new User(100, "KK100");
+    }
+
+    @Override
+    public User find(int timeout) {
+        String port = environment.getProperty("server.port");
+        if (port.equals("8081")){
+            try {
+                Thread.sleep(timeout);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return new User(1001, "Clot-1001-" + port);
     }
 }

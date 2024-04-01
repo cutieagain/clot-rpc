@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.net.SocketTimeoutException;
 import java.util.List;
 
 /**
@@ -24,7 +25,7 @@ public class ClotInvocationHandler implements InvocationHandler {
 
     List<InstanceMata> providers;
 
-    HttpInvoker httpInvoker = new OkHttpInvoker();
+    HttpInvoker httpInvoker;
 
 //    public ClotInvocationHandler(Class<?> clazz){
 //        this.service = clazz;
@@ -34,6 +35,9 @@ public class ClotInvocationHandler implements InvocationHandler {
         this.service = clazz;
         this.rpcContext = rpcContext;
         this.providers = providers;
+        int timeout = Integer.parseInt(rpcContext.getParameters()
+                .getOrDefault("app.timeout", "1000"));
+        httpInvoker = new OkHttpInvoker(timeout);
     }
 
     @Override
@@ -50,31 +54,44 @@ public class ClotInvocationHandler implements InvocationHandler {
         rpcRequest.setMethodSign(MethodUtils.methodSign(method));
         rpcRequest.setArgs(args);
 
-        for (Filter filter : this.rpcContext.getFilters()) {
-            // 过滤
-            // 可以抛出异常同一处理，或者返回一个空对象
-            RpcResponse preResponse = filter.preFilter(rpcRequest);
-            if (preResponse != null) {
-                log.debug(filter.getClass().getName() + " ==> preFilter : " + preResponse);
-                return castReturnResult(method, preResponse);
+        // 重试次数
+        int retries = Integer.parseInt(rpcContext.getParameters()
+                .getOrDefault("app.retries", "1"));
+        while (retries -- > 0){
+            log.debug(" ===> consumer invoke retries: " + retries);
+            try{
+                for (Filter filter : this.rpcContext.getFilters()) {
+                    // 过滤
+                    // 可以抛出异常同一处理，或者返回一个空对象
+                    RpcResponse<?> preResponse = filter.preFilter(rpcRequest);
+                    if (preResponse != null) {
+                        log.debug(filter.getClass().getName() + " ==> preFilter : " + preResponse);
+                        return castReturnResult(method, preResponse);
+                    }
+                }
+
+                // 负载均衡
+                List<InstanceMata> instances = rpcContext.getRouter().route(this.providers);
+                InstanceMata instance = rpcContext.getLoadBalance().choose(instances);
+                log.debug(" ===> loadBalance.choose(instances): " + instance);
+
+                // rpcRequest 作为http请求
+                RpcResponse<?> rpcResponse = httpInvoker.post(rpcRequest, instance.toUrl());
+
+                // TODO: 2024/3/31 这里拿到的可能不是最终值，需要对cache进行排序，放最后执行
+                for (Filter filter : this.rpcContext.getFilters()) {
+                    // 每次处理都要使用上一次处理过的rpcResponse
+                    rpcResponse = filter.postFilter(rpcRequest, rpcResponse);
+                }
+
+                return castReturnResult(method, rpcResponse);
+            } catch (Exception ex){
+                if (!(ex.getCause() instanceof SocketTimeoutException)){
+                    throw ex;
+                }
             }
         }
-
-        // 负载均衡
-        List<InstanceMata> instances = rpcContext.getRouter().route(this.providers);
-        InstanceMata instance = rpcContext.getLoadBalance().choose(instances);
-        log.debug(" ===> loadBalance.choose(instances): " + instance);
-
-        // rpcRequest 作为http请求
-        RpcResponse<?> rpcResponse = httpInvoker.post(rpcRequest, instance.toUrl());
-
-        // TODO: 2024/3/31 这里拿到的可能不是最终值，需要对cache进行排序，放最后执行
-        for (Filter filter : this.rpcContext.getFilters()) {
-            // 每次处理都要使用上一次处理过的rpcResponse
-            rpcResponse = filter.postFilter(rpcRequest, rpcResponse);
-        }
-
-        return castReturnResult(method, rpcResponse);
+        return null;
     }
 
     @Nullable
