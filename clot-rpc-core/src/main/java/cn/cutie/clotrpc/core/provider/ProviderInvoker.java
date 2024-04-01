@@ -5,6 +5,7 @@ import cn.cutie.clotrpc.core.api.RpcResponse;
 import cn.cutie.clotrpc.core.meta.ProviderMata;
 import cn.cutie.clotrpc.core.utils.TypeUtils;
 import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -14,14 +15,14 @@ import java.util.Optional;
 public class ProviderInvoker {
 
     // 方法级别的映射关系
-    private LinkedMultiValueMap<String, ProviderMata> skeleton;
+    private MultiValueMap<String, ProviderMata> skeleton;
 
     public ProviderInvoker(ProviderBootstrap providerBootstrap) {
         this.skeleton = providerBootstrap.getSkeleton();
     }
 
     public RpcResponse<Object> invoke(RpcRequest request) {
-        RpcResponse<Object> rpcResponse = new RpcResponse();
+        RpcResponse<Object> rpcResponse = new RpcResponse<>();
 //        Object bean = skeleton.get(request.getService());
         List<ProviderMata> providerMatas = skeleton.get(request.getService());
         try {

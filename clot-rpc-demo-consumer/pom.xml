@@ -53,6 +53,8 @@
             <artifactId>clot-rpc-core</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+
+        <!-- idea里面是可行的，mvn package有时候行有时候不行 -->
         <dependency>
             <groupId>cn.cutie</groupId>
             <artifactId>clot-rpc-demo-provider</artifactId>

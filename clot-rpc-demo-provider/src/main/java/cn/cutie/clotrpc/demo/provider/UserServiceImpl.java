@@ -92,4 +92,15 @@ public class UserServiceImpl implements UserService {
     public User[] findUsers(User[] users) {
         return users;
     }
+
+    @Override
+    public User findById(long id) {
+        return new User(Long.valueOf(id).intValue(), "KK");
+    }
+
+    @Override
+    public User ex(boolean flag) {
+        if(flag) throw new RuntimeException("just throw an exception");
+        return new User(100, "KK100");
+    }
 }

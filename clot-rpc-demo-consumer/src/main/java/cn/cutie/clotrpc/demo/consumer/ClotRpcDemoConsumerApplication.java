@@ -132,6 +132,22 @@ public class ClotRpcDemoConsumerApplication {
                 new User(100, "clot-100"),
                 new User(101, "clot-101")};
         Arrays.stream(userService.findUsers(users)).forEach(System.out::println);
+
+        log.info(("Case 15. >>===[测试参数为long，返回值是User类型]==="));
+        User userLong = userService.findById(10000L);
+        log.info(userLong.toString());
+
+        log.info(("Case 16. >>===[测试参数为boolean，返回值都是User类型]==="));
+        User user100 = userService.ex(false);
+        log.info(user100.toString());
+
+        log.info(("Case 17. >>===[测试服务端抛出一个RuntimeException异常]==="));
+        try {
+            User userEx = userService.ex(true);
+            log.info((userEx.toString()));
+        } catch (RuntimeException e) {
+            log.info((" ===> exception: " + e.getMessage()));
+        }
     }
 
 }

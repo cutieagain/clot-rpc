@@ -83,14 +83,12 @@ public class ClotInvocationHandler implements InvocationHandler {
     @Nullable
     private static Object castReturnResult(Method method, RpcResponse<?> rpcResponse) {
         if (rpcResponse.isStatus()){
-            Object data = rpcResponse.getData();
-            return TypeUtils.castMethodResult(method, data);
+            return TypeUtils.castMethodResult(method, rpcResponse.getData());
         } else {
-            Exception exception = rpcResponse.getEx();
 //            exception.printStackTrace();
 //            log.debug("===> " + exception);
             // 服务端的异常传递到客户端中
-            throw new RuntimeException(exception);
+            throw new RuntimeException(rpcResponse.getEx());
         }
     }
 
