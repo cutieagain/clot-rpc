@@ -47,6 +47,7 @@
             <groupId>cn.cutie</groupId>
             <artifactId>clot-rpc-demo-api</artifactId>
             <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>cn.cutie</groupId>

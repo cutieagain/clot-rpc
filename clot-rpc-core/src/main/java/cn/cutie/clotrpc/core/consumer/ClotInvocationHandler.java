@@ -120,16 +120,17 @@ public class ClotInvocationHandler implements InvocationHandler {
                 } catch (Exception e){
                     // 故障规则统计和隔离
                     // 每一次异常记录依次，统计30s内的异常数
-                    SlidingTimeWindow window = windows.get(url);
-                    if (window == null){
-                        window = new SlidingTimeWindow();
-                        windows.put(url, window);
-                    }
-                    window.record(System.currentTimeMillis());
-                    log.debug(" ===> instance {} in window with {}", url, window.getSum());
-                    // 发生了10次就进行故障隔离
-                    if (window.getSum() >= 10){
-                        isolate(instance);
+
+                    synchronized (windows) {
+                        SlidingTimeWindow window = windows.computeIfAbsent(url, k -> new SlidingTimeWindow());
+
+                        window.record(System.currentTimeMillis());
+                        log.debug("instance {} in window with {}", url, window.getSum());
+                        if (window.getSum() >= 10) {
+                            // TODO: 2024/4/2 这里如果累加到10以上，就算同步了，每次都会进来？providers 是否能及时被移除？window的 sum 不会每次加到10就被移除了
+                            log.debug(" ===> isolate when window.getSum >= 10");
+                            isolate(instance);
+                        }
                     }
                     throw e;
                 }
