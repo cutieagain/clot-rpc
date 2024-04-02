@@ -1,6 +1,8 @@
 package cn.cutie.clotrpc.demo.consumer;
 
 import cn.cutie.clotrpc.core.annotation.ClotConsumer;
+import cn.cutie.clotrpc.core.api.Router;
+import cn.cutie.clotrpc.core.cluster.GrayRouter;
 import cn.cutie.clotrpc.core.consumer.ConsumerConfig;
 import cn.cutie.clotrpc.demo.api.OrderService;
 import cn.cutie.clotrpc.demo.api.User;
@@ -48,6 +50,15 @@ public class ClotRpcDemoConsumerApplication {
     @RequestMapping("/find")
     public User find(@RequestParam("timeout") int timeout){
         return userService.find(timeout);
+    }
+
+    @Autowired
+    Router router;
+
+    @RequestMapping("/gray")
+    public String gray(@RequestParam("ratio") int ratio){
+        ((GrayRouter)router).setGrayRatio(ratio);
+        return "ok: new gray ratio is " + ratio;
     }
 
     public static void main(String[] args) {

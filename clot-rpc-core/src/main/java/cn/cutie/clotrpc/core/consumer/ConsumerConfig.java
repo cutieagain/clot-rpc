@@ -4,6 +4,7 @@ import cn.cutie.clotrpc.core.api.Filter;
 import cn.cutie.clotrpc.core.api.LoadBalance;
 import cn.cutie.clotrpc.core.api.RegistryCenter;
 import cn.cutie.clotrpc.core.api.Router;
+import cn.cutie.clotrpc.core.cluster.GrayRouter;
 import cn.cutie.clotrpc.core.cluster.RandomLoadBalancer;
 import cn.cutie.clotrpc.core.cluster.RoundRobinLoadBalancer;
 import cn.cutie.clotrpc.core.filter.CacheFilter;
@@ -26,6 +27,9 @@ public class ConsumerConfig {
 
     @Value("${clotrpc.providers}")
     String servers;
+
+    @Value("${app.grayRatio}")
+    private int grayRatio;
 
     // 把ConsumerBootstrap变成一个bean放在Spring里面
     @Bean
@@ -54,7 +58,8 @@ public class ConsumerConfig {
 
     @Bean
     public Router<InstanceMata> router(){
-        return Router.Default;
+//        return Router.Default;
+        return new GrayRouter(grayRatio);
     }
 
     /**

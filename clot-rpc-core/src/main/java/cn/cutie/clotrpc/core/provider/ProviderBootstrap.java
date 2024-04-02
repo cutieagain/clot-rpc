@@ -73,6 +73,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
         ip = InetAddress.getLoopbackAddress().getHostAddress();
         instance = InstanceMata.http(ip, Integer.valueOf(port));
         // 启动的时候添加实例信息：{dc: 'bj', gray:'false', unit:'B001'}
+        log.info(" ===> current instance params:{}", metas);
         instance.getParameters().putAll(metas);
         registryCenter.start();
         skeleton.keySet().forEach(this::registerService); // 这里zk有了，但是spring还未完成，服务实际是不可用的
