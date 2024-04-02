@@ -47,6 +47,8 @@ public class ProviderBootstrap implements ApplicationContextAware {
     private String namespace;
     @Value("${app.env}")
     private String env;
+    @Value("#{${app.metas}}") // # 表示spel
+    private Map<String, String> metas;
 
     // 方法执行之前，把加了注解的服务提前加载好
     @PostConstruct // 相当于initMethod
@@ -70,6 +72,8 @@ public class ProviderBootstrap implements ApplicationContextAware {
         // ip和端口构造对应实例
         ip = InetAddress.getLoopbackAddress().getHostAddress();
         instance = InstanceMata.http(ip, Integer.valueOf(port));
+        // 启动的时候添加实例信息：{dc: 'bj', gray:'false', unit:'B001'}
+        instance.getParameters().putAll(metas);
         registryCenter.start();
         skeleton.keySet().forEach(this::registerService); // 这里zk有了，但是spring还未完成，服务实际是不可用的
     }

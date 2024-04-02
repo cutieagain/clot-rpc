@@ -4,6 +4,7 @@ import cn.cutie.clotrpc.core.api.RegistryCenter;
 import cn.cutie.clotrpc.core.api.RpcException;
 import cn.cutie.clotrpc.core.meta.InstanceMata;
 import cn.cutie.clotrpc.core.meta.ServiceMeta;
+import com.alibaba.fastjson.JSON;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.RetryPolicy;
@@ -15,7 +16,9 @@ import org.apache.zookeeper.CreateMode;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -68,7 +71,7 @@ public class ZkRegisterCenter implements RegistryCenter {
             }
             // 创建实例的临时节点
             String instancePath = servicePath + "/" + instance.toPath();
-            client.create().withMode(CreateMode.EPHEMERAL).forPath(instancePath, "provider".getBytes());
+            client.create().withMode(CreateMode.EPHEMERAL).forPath(instancePath, instance.toMetas().getBytes());
 
             log.info(" ===> register to zk:" + instancePath);
         } catch (Exception e) {
@@ -101,20 +104,34 @@ public class ZkRegisterCenter implements RegistryCenter {
             // 获取所有子节点
             List<String> nodes = client.getChildren().forPath(servicePath);
             log.info(" ===> fetchAll from zk:" + servicePath);
-            nodes.forEach(System.out::println);
-            return mapInstance(nodes);
+//            nodes.forEach(System.out::println);
+            return mapInstance(nodes, servicePath);
         } catch (Exception e) {
             throw new RpcException(e);
         }
     }
 
-    @NotNull
-    private static List<InstanceMata> mapInstance(List<String> nodes) {
-        List<InstanceMata> providers = nodes.stream().map(x -> {
+    private List<InstanceMata> mapInstance(List<String> nodes, String servicePath) {
+        return nodes.stream().map(x -> {
             String[] strs = x.split("_");
-            return InstanceMata.http(strs[0], Integer.valueOf(strs[1]));
+            InstanceMata instance = InstanceMata.http(strs[0], Integer.valueOf(strs[1]));
+
+            log.info(" ===> instance: {}", instance.toUrl());
+
+            String nodePath = servicePath + "/" + x;
+            byte[] bytes;
+            try {
+                bytes = client.getData().forPath(nodePath);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+            HashMap params = JSON.parseObject(new String(bytes), HashMap.class);
+            params.forEach((k, v) -> log.info(k + ":" + v));
+
+            instance.setParameters(params);
+            return instance;
         }).collect(Collectors.toList());
-        return providers;
     }
 
     @SneakyThrows

@@ -1,9 +1,11 @@
 package cn.cutie.clotrpc.core.meta;
 
+import com.alibaba.fastjson.JSON;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -22,7 +24,7 @@ public class InstanceMata {
     // 实例状态 online,offline
     private boolean status;
     // 参数：哪个机房之类的
-    private Map<String, String> parameters;
+    private Map<String, String> parameters = new HashMap<>();
 
     public InstanceMata(String scheme, String host, Integer port, String context) {
         this.scheme = scheme;
@@ -42,5 +44,9 @@ public class InstanceMata {
 
     public static InstanceMata http(String host, Integer port){
         return new InstanceMata("http", host, port, "");
+    }
+
+    public String toMetas() {
+        return JSON.toJSONString(this.getParameters());
     }
 }
