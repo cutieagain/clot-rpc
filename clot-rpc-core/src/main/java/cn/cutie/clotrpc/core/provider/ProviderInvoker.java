@@ -9,6 +9,7 @@ import org.springframework.util.MultiValueMap;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,7 +35,7 @@ public class ProviderInvoker {
 //            Method method = findMethod(bean.getClass(), request.getMethodSign());
 //            Object result = method.invoke(bean, request.getArgs());
             Method method = providerMata.getMethod();
-            Object[] args = processArgs(request.getArgs(), method.getParameterTypes());
+            Object[] args = processArgs(request.getArgs(), method.getParameterTypes(), method.getGenericParameterTypes());
             Object result = method.invoke(providerMata.getServiceImpl(), args);
             rpcResponse.setStatus(true);
             rpcResponse.setData(result);
@@ -57,12 +58,13 @@ public class ProviderInvoker {
     }
 
     // 参数类型转换为签名上的方法
-    private Object[] processArgs(Object[] args, Class<?>[] parameterTypes) {
+    private Object[] processArgs(Object[] args, Class<?>[] parameterTypes, Type[] genericParameterTypes) {
         if (args == null || args.length == 0) return args;
         Object[] actuals = new Object[args.length];
         for (int i = 0; i < args.length; i++) {
             // 类型按照参数列表的类型转换一次
-            actuals[i] = TypeUtils.cast(args[i], parameterTypes[i]);
+//            actuals[i] = TypeUtils.cast(args[i], parameterTypes[i]);
+            actuals[i] = TypeUtils.castGeneric(args[i], parameterTypes[i], genericParameterTypes[i]);
         }
         return actuals;
     }

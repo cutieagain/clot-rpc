@@ -76,11 +76,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getList(List<User> userList) {
+        User[] users = userList.toArray(new User[userList.size()]);
+        System.out.println(" ==> userList.toArray()[] = ");
+        Arrays.stream(users).forEach(System.out::println);
+        userList.add(new User(2024,"KK2024"));
         return userList;
     }
 
     @Override
     public Map<String, User> getMap(Map<String, User> userMap) {
+        userMap.values().forEach(x -> System.out.println(x.getClass()));
+        User[] users = userMap.values().toArray(new User[userMap.size()]);
+        System.out.println(" ==> userMap.values().toArray()[] = ");
+        Arrays.stream(users).forEach(System.out::println);
+        userMap.put("A2024", new User(2024,"KK2024"));
         return userMap;
     }
 
