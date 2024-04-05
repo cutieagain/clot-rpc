@@ -186,12 +186,13 @@ public class ClotInvocationHandler implements InvocationHandler {
         if (rpcResponse.isStatus()){
             return TypeUtils.castMethodResult(method, rpcResponse.getData());
         } else {
-            Exception exception = rpcResponse.getEx();
-            if (exception instanceof RpcException ex){
-                throw ex;
+            RpcException exception = rpcResponse.getEx();
+            if (exception != null){
+                log.error("response error", exception);
+                throw exception;
             }
             // 换成自定义异常
-            throw new RpcException(exception, RpcException.UnknownEx);
+            return null;
         }
     }
 
