@@ -1,11 +1,11 @@
 package cn.cutie.clotrpc.core.cluster;
 
-import cn.cutie.clotrpc.core.api.LoadBalance;
+import cn.cutie.clotrpc.core.api.LoadBalancer;
 
 import java.util.List;
 import java.util.Random;
 
-public class RandomLoadBalancer<T> implements LoadBalance<T> {
+public class RandomLoadBalancer<T> implements LoadBalancer<T> {
 
     Random random = new Random();
 

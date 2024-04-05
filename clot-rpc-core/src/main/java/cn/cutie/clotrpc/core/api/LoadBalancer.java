@@ -18,9 +18,9 @@ import java.util.List;
  * 根据平均时间调整他们的权重
  * 平均响应时间 * 0.3 + 最近一次响应时间 * 0.7 = 当前权重
  */
-public interface LoadBalance<T> {
+public interface LoadBalancer<T> {
     T choose(List<T> providers);
 
     // 默认是static
-    LoadBalance Default = p -> (p == null || p.isEmpty()) ? null : p.get(0);
+    LoadBalancer Default = p -> (p == null || p.isEmpty()) ? null : p.get(0);
 }

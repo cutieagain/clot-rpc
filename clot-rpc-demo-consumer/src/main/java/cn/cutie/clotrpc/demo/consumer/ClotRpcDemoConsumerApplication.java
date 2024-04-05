@@ -4,7 +4,7 @@ import cn.cutie.clotrpc.core.annotation.ClotConsumer;
 import cn.cutie.clotrpc.core.api.Router;
 import cn.cutie.clotrpc.core.api.RpcContext;
 import cn.cutie.clotrpc.core.cluster.GrayRouter;
-import cn.cutie.clotrpc.core.consumer.ConsumerConfig;
+import cn.cutie.clotrpc.core.config.ConsumerConfig;
 import cn.cutie.clotrpc.demo.api.OrderService;
 import cn.cutie.clotrpc.demo.api.User;
 import cn.cutie.clotrpc.demo.api.UserService;

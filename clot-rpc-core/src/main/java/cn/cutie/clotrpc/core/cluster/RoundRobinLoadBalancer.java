@@ -1,11 +1,11 @@
 package cn.cutie.clotrpc.core.cluster;
 
-import cn.cutie.clotrpc.core.api.LoadBalance;
+import cn.cutie.clotrpc.core.api.LoadBalancer;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class RoundRobinLoadBalancer<T> implements LoadBalance<T> {
+public class RoundRobinLoadBalancer<T> implements LoadBalancer<T> {
 
     AtomicInteger index = new AtomicInteger(0);
 

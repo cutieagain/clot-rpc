@@ -2,26 +2,21 @@ package cn.cutie.clotrpc.core.provider;
 
 import cn.cutie.clotrpc.core.annotation.ClotProvider;
 import cn.cutie.clotrpc.core.api.RegistryCenter;
-import cn.cutie.clotrpc.core.api.RpcRequest;
-import cn.cutie.clotrpc.core.api.RpcResponse;
-import cn.cutie.clotrpc.core.meta.InstanceMata;
+import cn.cutie.clotrpc.core.config.AppConfigProperties;
+import cn.cutie.clotrpc.core.config.ProviderConfigProperties;
+import cn.cutie.clotrpc.core.meta.InstanceMeta;
 import cn.cutie.clotrpc.core.meta.ProviderMata;
 import cn.cutie.clotrpc.core.meta.ServiceMeta;
 import cn.cutie.clotrpc.core.utils.MethodUtils;
-import cn.cutie.clotrpc.core.utils.TypeUtils;
-import com.sun.jdi.InvocationException;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.LinkedMultiValueMap;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.util.*;
@@ -31,24 +26,30 @@ import java.util.*;
 public class ProviderBootstrap implements ApplicationContextAware {
 
     ApplicationContext applicationContext;
-
     private LinkedMultiValueMap<String, ProviderMata> skeleton = new LinkedMultiValueMap<>();
 
-    private String ip;
-    @Value("${server.port}")
     private String port;
-    private InstanceMata instance;
+    private InstanceMeta instance;
+    private RegistryCenter registryCenter;
+    private AppConfigProperties appConfigProperties;
+    private ProviderConfigProperties providerConfigProperties;
 
-    RegistryCenter registryCenter;
+//    @Value("${app.id}")
+//    private String app;
+//    @Value("${app.namespace}")
+//    private String namespace;
+//    @Value("${app.env}")
+//    private String env;
+//    @Value("#{${app.metas}}") // # 表示spel
+//    private Map<String, String> metas;
 
-    @Value("${app.id}")
-    private String app;
-    @Value("${app.namespace}")
-    private String namespace;
-    @Value("${app.env}")
-    private String env;
-    @Value("#{${app.metas}}") // # 表示spel
-    private Map<String, String> metas;
+
+
+    public ProviderBootstrap(String port, AppConfigProperties appConfigProperties, ProviderConfigProperties providerConfigProperties) {
+        this.port = port;
+        this.appConfigProperties = appConfigProperties;
+        this.providerConfigProperties = providerConfigProperties;
+    }
 
     // 方法执行之前，把加了注解的服务提前加载好
     @PostConstruct // 相当于initMethod
@@ -70,11 +71,10 @@ public class ProviderBootstrap implements ApplicationContextAware {
     @SneakyThrows
     public void start(){
         // ip和端口构造对应实例
-        ip = InetAddress.getLoopbackAddress().getHostAddress();
-        instance = InstanceMata.http(ip, Integer.valueOf(port));
+        String ip = InetAddress.getLoopbackAddress().getHostAddress();
         // 启动的时候添加实例信息：{dc: 'bj', gray:'false', unit:'B001'}
-        log.info(" ===> current instance params:{}", metas);
-        instance.getParameters().putAll(metas);
+        log.info(" ===> current instance params:{}", providerConfigProperties.getMetas());
+        instance = InstanceMeta.http(ip, Integer.valueOf(port)).addParams(providerConfigProperties.getMetas());
         registryCenter.start();
         skeleton.keySet().forEach(this::registerService); // 这里zk有了，但是spring还未完成，服务实际是不可用的
     }
@@ -89,9 +89,9 @@ public class ProviderBootstrap implements ApplicationContextAware {
     private void unRegisterService(String service) {
         ServiceMeta serviceMeta = ServiceMeta.builder()
                 .name(service)
-                .app(app)
-                .namespace(namespace)
-                .env(env)
+                .app(appConfigProperties.getId())
+                .namespace(appConfigProperties.getNamespace())
+                .env(appConfigProperties.getEnv())
                 .build();
         registryCenter.unRegister(serviceMeta, instance);
     }
@@ -103,9 +103,9 @@ public class ProviderBootstrap implements ApplicationContextAware {
     private void registerService(String service) {
         ServiceMeta serviceMeta = ServiceMeta.builder()
                 .name(service)
-                .app(app)
-                .namespace(namespace)
-                .env(env)
+                .app(appConfigProperties.getId())
+                .namespace(appConfigProperties.getNamespace())
+                .env(appConfigProperties.getEnv())
                 .build();
         registryCenter.register(serviceMeta, instance);
     }

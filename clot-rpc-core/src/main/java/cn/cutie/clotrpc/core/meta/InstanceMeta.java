@@ -14,7 +14,7 @@ import java.util.Map;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class InstanceMata {
+public class InstanceMeta {
     // 目前是http
     private String scheme;
     private String host;
@@ -26,7 +26,7 @@ public class InstanceMata {
     // 参数：哪个机房之类的
     private Map<String, String> parameters = new HashMap<>();
 
-    public InstanceMata(String scheme, String host, Integer port, String context) {
+    public InstanceMeta(String scheme, String host, Integer port, String context) {
         this.scheme = scheme;
         this.host = host;
         this.port = port;
@@ -42,8 +42,13 @@ public class InstanceMata {
         return String.format("%s_%d", host, port);
     }
 
-    public static InstanceMata http(String host, Integer port){
-        return new InstanceMata("http", host, port, "");
+    public static InstanceMeta http(String host, Integer port){
+        return new InstanceMeta("http", host, port, "clotrpc");
+    }
+
+    public InstanceMeta addParams(Map<String, String> params) {
+        this.getParameters().putAll(params);
+        return this;
     }
 
     public String toMetas() {

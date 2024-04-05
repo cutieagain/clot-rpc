@@ -2,14 +2,13 @@ package cn.cutie.clotrpc.core.consumer;
 
 import cn.cutie.clotrpc.core.annotation.ClotConsumer;
 import cn.cutie.clotrpc.core.api.*;
-import cn.cutie.clotrpc.core.meta.InstanceMata;
+import cn.cutie.clotrpc.core.meta.InstanceMeta;
 import cn.cutie.clotrpc.core.meta.ServiceMeta;
 import cn.cutie.clotrpc.core.registry.ChangedListener;
 import cn.cutie.clotrpc.core.registry.Event;
 import cn.cutie.clotrpc.core.utils.MethodUtils;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
@@ -18,7 +17,6 @@ import org.springframework.core.env.Environment;
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 消费端启动类
@@ -33,29 +31,17 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 
     private Map<String, Object> stub = new HashMap<>();
 
-    @Value("${app.id}")
-    private String app;
-    @Value("${app.namespace}")
-    private String namespace;
-    @Value("${app.env}")
-    private String env;
-    @Value("${app.retries}")
-    private int retries;
-    @Value("${app.timeout}")
-    private int timeout;
-
     public void start(){
-        Router<InstanceMata> router = applicationContext.getBean(Router.class);
-        LoadBalance<InstanceMata> loadBalance = applicationContext.getBean(LoadBalance.class);
+//        Router<InstanceMeta> router = applicationContext.getBean(Router.class);
+//        LoadBalancer<InstanceMeta> loadBalancer = applicationContext.getBean(LoadBalancer.class);
         RegistryCenter registryCenter = applicationContext.getBean(RegistryCenter.class);
-        List<Filter> filters = applicationContext.getBeansOfType(Filter.class).values().stream().toList();
+//        List<Filter> filters = applicationContext.getBeansOfType(Filter.class).values().stream().toList();
+//        RpcContext rpcContext = new RpcContext();
+//        rpcContext.setRouter(router);
+//        rpcContext.setLoadBalancer(loadBalancer);
+//        rpcContext.setFilters(filters);
 
-        RpcContext rpcContext = new RpcContext();
-        rpcContext.setRouter(router);
-        rpcContext.setLoadBalance(loadBalance);
-        rpcContext.setFilters(filters);
-        rpcContext.getParameters().put("app.retries", String.valueOf(retries));
-        rpcContext.getParameters().put("app.timeout", String.valueOf(timeout));
+        RpcContext rpcContext = applicationContext.getBean(RpcContext.class);
 
 //        String urls = environment.getProperty("clotrpc.providers");
 //        if (urls.isEmpty()){
@@ -94,15 +80,14 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 
     private Object createFromRegistry(Class<?> service, RpcContext rpcContext, RegistryCenter registryCenter) {
         // 处理service和consumer关系的
-        String serviceName = service.getCanonicalName();
         ServiceMeta serviceMeta = ServiceMeta.builder()
-                .name(serviceName)
-                .app(app)
-                .namespace(namespace)
-                .env(env)
+                .name(service.getCanonicalName())
+                .app(rpcContext.param("app.id"))
+                .namespace(rpcContext.param("app.namespace"))
+                .env(rpcContext.param("app.env"))
                 .build();
 
-        List<InstanceMata> providers = registryCenter.fetchAll(serviceMeta);
+        List<InstanceMeta> providers = registryCenter.fetchAll(serviceMeta);
         log.info(" ===> map to providers:");
         providers.forEach(System.out::println);
 
@@ -117,7 +102,7 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
         return this.createConsumer(service, rpcContext, providers);
     }
 
-    private Object createConsumer(Class<?> service, RpcContext rpcContext, List<InstanceMata> providers) {
+    private Object createConsumer(Class<?> service, RpcContext rpcContext, List<InstanceMeta> providers) {
         // 1、动态代理
         return Proxy.newProxyInstance(service.getClassLoader(), new Class[]{service},
                 new ClotInvocationHandler(service, rpcContext, providers));

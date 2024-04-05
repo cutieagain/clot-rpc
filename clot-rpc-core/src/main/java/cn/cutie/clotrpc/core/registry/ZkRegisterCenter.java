@@ -2,7 +2,7 @@ package cn.cutie.clotrpc.core.registry;
 
 import cn.cutie.clotrpc.core.api.RegistryCenter;
 import cn.cutie.clotrpc.core.api.RpcException;
-import cn.cutie.clotrpc.core.meta.InstanceMata;
+import cn.cutie.clotrpc.core.meta.InstanceMeta;
 import cn.cutie.clotrpc.core.meta.ServiceMeta;
 import com.alibaba.fastjson.JSON;
 import lombok.SneakyThrows;
@@ -13,12 +13,10 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -30,10 +28,10 @@ public class ZkRegisterCenter implements RegistryCenter {
 
     private CuratorFramework client = null;
 
-    @Value("${clotrpc.zkServer}")
+    @Value("${clotrpc.zk.server:localhost:2181}")
     String servers;
 
-    @Value("${clotrpc.zkRoot}")
+    @Value("${clotrpc.zk.root:clot-rpc}")
     String root;
 
 
@@ -57,7 +55,7 @@ public class ZkRegisterCenter implements RegistryCenter {
     }
 
     @Override
-    public void register(ServiceMeta service, InstanceMata instance) {
+    public void register(ServiceMeta service, InstanceMeta instance) {
         // 服务和实例写到zk里面
         // 持久化节点，临时节点
         // 服务创建为持久节点，服务下面的实例为临时节点
@@ -80,7 +78,7 @@ public class ZkRegisterCenter implements RegistryCenter {
     }
 
     @Override
-    public void unRegister(ServiceMeta service, InstanceMata instance) {
+    public void unRegister(ServiceMeta service, InstanceMeta instance) {
         String servicePath = "/" + service;
         try {
             // 服务的持久化节点不存在
@@ -98,7 +96,7 @@ public class ZkRegisterCenter implements RegistryCenter {
     }
 
     @Override
-    public List<InstanceMata> fetchAll(ServiceMeta service) {
+    public List<InstanceMeta> fetchAll(ServiceMeta service) {
         String servicePath = "/" + service.toPath();
         try {
             // 获取所有子节点
@@ -111,10 +109,10 @@ public class ZkRegisterCenter implements RegistryCenter {
         }
     }
 
-    private List<InstanceMata> mapInstance(List<String> nodes, String servicePath) {
+    private List<InstanceMeta> mapInstance(List<String> nodes, String servicePath) {
         return nodes.stream().map(x -> {
             String[] strs = x.split("_");
-            InstanceMata instance = InstanceMata.http(strs[0], Integer.valueOf(strs[1]));
+            InstanceMeta instance = InstanceMeta.http(strs[0], Integer.valueOf(strs[1]));
 
             log.info(" ===> instance: {}", instance.toUrl());
 
@@ -146,7 +144,7 @@ public class ZkRegisterCenter implements RegistryCenter {
                 (curator, event) -> {
                     // 有任何节点变动，这里会执行
                     log.info("zk subscribe event: " + event);
-                    List<InstanceMata> nodes = fetchAll(service);
+                    List<InstanceMeta> nodes = fetchAll(service);
                     listener.fire(new Event(nodes));
                 }
         );

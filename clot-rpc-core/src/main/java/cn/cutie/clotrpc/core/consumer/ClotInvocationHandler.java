@@ -3,7 +3,7 @@ package cn.cutie.clotrpc.core.consumer;
 import cn.cutie.clotrpc.core.api.*;
 import cn.cutie.clotrpc.core.consumer.http.OkHttpInvoker;
 import cn.cutie.clotrpc.core.governance.SlidingTimeWindow;
-import cn.cutie.clotrpc.core.meta.InstanceMata;
+import cn.cutie.clotrpc.core.meta.InstanceMeta;
 import cn.cutie.clotrpc.core.utils.MethodUtils;
 import cn.cutie.clotrpc.core.utils.TypeUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -30,12 +30,12 @@ public class ClotInvocationHandler implements InvocationHandler {
 
     RpcContext rpcContext;
 
-    final List<InstanceMata> providers;
+    final List<InstanceMeta> providers;
 
     // 隔离的provider
-    List<InstanceMata> isolatedProviders = new ArrayList<>();
+    List<InstanceMeta> isolatedProviders = new ArrayList<>();
     // 半开的provider
-    final List<InstanceMata> halfOpenProviders = new ArrayList<>();
+    final List<InstanceMeta> halfOpenProviders = new ArrayList<>();
 
     HttpInvoker httpInvoker;
 
@@ -48,7 +48,7 @@ public class ClotInvocationHandler implements InvocationHandler {
 //        this.service = clazz;
 //    }
 
-    public ClotInvocationHandler(Class<?> clazz, RpcContext rpcContext, List<InstanceMata> providers) {
+    public ClotInvocationHandler(Class<?> clazz, RpcContext rpcContext, List<InstanceMeta> providers) {
         this.service = clazz;
         this.rpcContext = rpcContext;
         this.providers = providers;
@@ -97,13 +97,13 @@ public class ClotInvocationHandler implements InvocationHandler {
                     }
                 }
 
-                InstanceMata instance;
+                InstanceMeta instance;
                 synchronized (halfOpenProviders){
                     // 如果半开为空，走原来的逻辑
                     if (halfOpenProviders.isEmpty()){
                         // 负载均衡
-                        List<InstanceMata> instances = rpcContext.getRouter().route(this.providers);
-                        instance = rpcContext.getLoadBalance().choose(instances);
+                        List<InstanceMeta> instances = rpcContext.getRouter().route(this.providers);
+                        instance = rpcContext.getLoadBalancer().choose(instances);
                         log.debug(" ===> loadBalance.choose(instances): " + instance);
                     } else {
                         // 半开需要探活
@@ -171,7 +171,7 @@ public class ClotInvocationHandler implements InvocationHandler {
      * 隔离实例
      * @param instance
      */
-    private void isolate(InstanceMata instance) {
+    private void isolate(InstanceMeta instance) {
         log.debug(" ===> isolate instance: {}", instance);
         // 从provider中移除
         providers.remove(instance);

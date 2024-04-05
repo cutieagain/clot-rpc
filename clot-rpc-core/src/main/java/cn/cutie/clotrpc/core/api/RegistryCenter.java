@@ -1,6 +1,6 @@
 package cn.cutie.clotrpc.core.api;
 
-import cn.cutie.clotrpc.core.meta.InstanceMata;
+import cn.cutie.clotrpc.core.meta.InstanceMeta;
 import cn.cutie.clotrpc.core.meta.ServiceMeta;
 import cn.cutie.clotrpc.core.registry.ChangedListener;
 
@@ -22,16 +22,16 @@ public interface RegistryCenter {
      *                  provider侧
      *********************************************/
     // 自己能提供的服务注册到注册中心上
-    void register(ServiceMeta service, InstanceMata instance);
+    void register(ServiceMeta service, InstanceMeta instance);
 
     // 主动反注册，或者注册中心感知后进行反注册
-    void unRegister(ServiceMeta service, InstanceMata instance);
+    void unRegister(ServiceMeta service, InstanceMeta instance);
 
     /*********************************************
      *                  consumer侧
      *********************************************/
     // 获取该服务所有的实例
-    List<InstanceMata> fetchAll(ServiceMeta service);
+    List<InstanceMeta> fetchAll(ServiceMeta service);
 
     /**
      * 订阅信息
@@ -50,9 +50,9 @@ public interface RegistryCenter {
      */
     class StaticRegistryCenter implements RegistryCenter {
 
-        List<InstanceMata> providers;
+        List<InstanceMeta> providers;
 
-        public StaticRegistryCenter(List<InstanceMata> providers){
+        public StaticRegistryCenter(List<InstanceMeta> providers){
             this.providers = providers;
         }
 
@@ -67,17 +67,17 @@ public interface RegistryCenter {
         }
 
         @Override
-        public void register(ServiceMeta service, InstanceMata instance) {
+        public void register(ServiceMeta service, InstanceMeta instance) {
 
         }
 
         @Override
-        public void unRegister(ServiceMeta service, InstanceMata instance) {
+        public void unRegister(ServiceMeta service, InstanceMeta instance) {
 
         }
 
         @Override
-        public List<InstanceMata> fetchAll(ServiceMeta service) {
+        public List<InstanceMeta> fetchAll(ServiceMeta service) {
             return providers;
         }
 

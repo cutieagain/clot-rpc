@@ -1,27 +1,44 @@
-package cn.cutie.clotrpc.core.provider;
+package cn.cutie.clotrpc.core.config;
 
 import cn.cutie.clotrpc.core.api.RegistryCenter;
+import cn.cutie.clotrpc.core.config.AppConfigProperties;
+import cn.cutie.clotrpc.core.config.ProviderConfigProperties;
 import cn.cutie.clotrpc.core.consumer.ConsumerBootstrap;
+import cn.cutie.clotrpc.core.provider.ProviderBootstrap;
+import cn.cutie.clotrpc.core.provider.ProviderInvoker;
 import cn.cutie.clotrpc.core.registry.ZkRegisterCenter;
+import cn.cutie.clotrpc.core.transport.SpringBootTransport;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.Order;
 
 import java.util.List;
 
 @Configuration
 @Slf4j
+@Import({AppConfigProperties.class, ProviderConfigProperties.class, SpringBootTransport.class})
 public class ProviderConfig {
+
+    @Value("${server.port:8080}")
+    private String port;
+
+    @Autowired
+    AppConfigProperties appConfigProperties;
+
+    @Autowired
+    ProviderConfigProperties providerConfigProperties;
 
     // 把ProviderBootstrap变成一个bean放在Spring里面
     @Bean
     ProviderBootstrap providerBootstrap(){
-        return new ProviderBootstrap();
+        return new ProviderBootstrap(port, appConfigProperties, providerConfigProperties);
     }
 
     @Bean

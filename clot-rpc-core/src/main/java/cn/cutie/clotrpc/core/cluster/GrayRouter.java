@@ -1,7 +1,7 @@
 package cn.cutie.clotrpc.core.cluster;
 
 import cn.cutie.clotrpc.core.api.Router;
-import cn.cutie.clotrpc.core.meta.InstanceMata;
+import cn.cutie.clotrpc.core.meta.InstanceMeta;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,7 +17,7 @@ import java.util.Random;
  */
 @Slf4j
 @Data
-public class GrayRouter implements Router<InstanceMata> {
+public class GrayRouter implements Router<InstanceMeta> {
 
     private int grayRatio;
 
@@ -29,13 +29,13 @@ public class GrayRouter implements Router<InstanceMata> {
 
 
     @Override
-    public List<InstanceMata> route(List<InstanceMata> providers) {
+    public List<InstanceMeta> route(List<InstanceMeta> providers) {
         // 如果只有一个或者为null，直接返回
         if (providers == null || providers.size() <= 1){
             return providers;
         }
-        List<InstanceMata> normalNodes = new ArrayList<>();
-        List<InstanceMata> grayNodes = new ArrayList<>();
+        List<InstanceMeta> normalNodes = new ArrayList<>();
+        List<InstanceMeta> grayNodes = new ArrayList<>();
         providers.forEach( p->{
             if ("true".equals(p.getParameters().get("gray"))){
                 grayNodes.add(p);
