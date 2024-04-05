@@ -9,6 +9,7 @@ import cn.cutie.clotrpc.core.cluster.RandomLoadBalancer;
 import cn.cutie.clotrpc.core.cluster.RoundRobinLoadBalancer;
 import cn.cutie.clotrpc.core.filter.CacheFilter;
 import cn.cutie.clotrpc.core.filter.MockFilter;
+import cn.cutie.clotrpc.core.filter.ParameterFilter;
 import cn.cutie.clotrpc.core.meta.InstanceMata;
 import cn.cutie.clotrpc.core.registry.ZkRegisterCenter;
 import lombok.extern.slf4j.Slf4j;
@@ -75,9 +76,10 @@ public class ConsumerConfig {
 
     @Bean
     public Filter filter(){
-        return Filter.Default;
+//        return Filter.Default;
 //        return new CacheFilter();
 //        return new MockFilter();
+        return new ParameterFilter();
     }
 
 }

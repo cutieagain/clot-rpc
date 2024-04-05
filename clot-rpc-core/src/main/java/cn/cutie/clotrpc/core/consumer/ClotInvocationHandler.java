@@ -90,10 +90,10 @@ public class ClotInvocationHandler implements InvocationHandler {
                 for (Filter filter : this.rpcContext.getFilters()) {
                     // 过滤
                     // 可以抛出异常同一处理，或者返回一个空对象
-                    RpcResponse<?> preResponse = filter.preFilter(rpcRequest);
-                    if (preResponse != null) {
-                        log.debug(filter.getClass().getName() + " ==> preFilter : " + preResponse);
-                        return castReturnResult(method, preResponse);
+                    Object preResult = filter.preFilter(rpcRequest);
+                    if (preResult != null) {
+                        log.debug(filter.getClass().getName() + " ==> preFilter : " + preResult);
+                        return preResult;
                     }
                 }
 
@@ -113,10 +113,13 @@ public class ClotInvocationHandler implements InvocationHandler {
                 }
 
                 RpcResponse<?> rpcResponse;
+                Object result;
+
                 String url = instance.toUrl();
                 try{
                     // rpcRequest 作为http请求
                     rpcResponse = httpInvoker.post(rpcRequest, url);
+                    result = castReturnResult(method, rpcResponse);
                 } catch (Exception e){
                     // 故障规则统计和隔离
                     // 每一次异常记录依次，统计30s内的异常数
@@ -148,10 +151,13 @@ public class ClotInvocationHandler implements InvocationHandler {
                 // TODO: 2024/3/31 这里拿到的可能不是最终值，需要对cache进行排序，放最后执行
                 for (Filter filter : this.rpcContext.getFilters()) {
                     // 每次处理都要使用上一次处理过的rpcResponse
-                    rpcResponse = filter.postFilter(rpcRequest, rpcResponse);
+                    Object filterResult = filter.postFilter(rpcRequest, rpcResponse, result);
+                    if (filterResult != null){
+                        return filterResult;
+                    }
                 }
 
-                return castReturnResult(method, rpcResponse);
+                return result;
             } catch (Exception ex){
                 if (!(ex.getCause() instanceof SocketTimeoutException)){
                     throw ex;

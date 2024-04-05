@@ -19,12 +19,12 @@ public class CacheFilter implements Filter {
     static Map<String, RpcResponse> cache = new ConcurrentHashMap();
 
     @Override
-    public RpcResponse preFilter(RpcRequest request) {
+    public Object preFilter(RpcRequest request) {
         return cache.get(request.toString());
     }
 
     @Override
-    public RpcResponse postFilter(RpcRequest request, RpcResponse response) {
+    public Object postFilter(RpcRequest request, RpcResponse response, Object result) {
         cache.putIfAbsent(request.toString(), response);
         return response;
     }

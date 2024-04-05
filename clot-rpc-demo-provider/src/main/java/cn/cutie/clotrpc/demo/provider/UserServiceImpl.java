@@ -1,6 +1,7 @@
 package cn.cutie.clotrpc.demo.provider;
 
 import cn.cutie.clotrpc.core.annotation.ClotProvider;
+import cn.cutie.clotrpc.core.api.RpcContext;
 import cn.cutie.clotrpc.demo.api.User;
 import cn.cutie.clotrpc.demo.api.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -132,5 +133,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public void setTimeoutPorts(String timeoutPorts){
         this.timeoutPorts = timeoutPorts;
+    }
+
+    @Override
+    public String echoParameter(String key) {
+        System.out.println(" ====>> RpcContext.ContextParameters: ");
+        RpcContext.ContextParameters.get().forEach((k,v)-> System.out.println(k+" -> " +v));
+        return RpcContext.getContextParameter(key);
     }
 }

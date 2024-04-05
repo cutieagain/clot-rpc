@@ -2,6 +2,7 @@ package cn.cutie.clotrpc.demo.consumer;
 
 import cn.cutie.clotrpc.core.annotation.ClotConsumer;
 import cn.cutie.clotrpc.core.api.Router;
+import cn.cutie.clotrpc.core.api.RpcContext;
 import cn.cutie.clotrpc.core.cluster.GrayRouter;
 import cn.cutie.clotrpc.core.consumer.ConsumerConfig;
 import cn.cutie.clotrpc.demo.api.OrderService;
@@ -173,6 +174,17 @@ public class ClotRpcDemoConsumerApplication {
         userService.find(1100);
         log.info("userService.find take "
                 + (System.currentTimeMillis()-start) + " ms");
+
+        log.info("Case 19. >>===[测试通过Context跨消费者和提供者进行传参]===");
+        String Key_Version = "rpc.version";
+        String Key_Message = "rpc.message";
+        RpcContext.setContextParameter(Key_Version, "v8");
+        RpcContext.setContextParameter(Key_Message, "this is a test message");
+        String version = userService.echoParameter(Key_Version);
+        String message = userService.echoParameter(Key_Message);
+        log.info(" ===> echo parameter from c->p->c: " + Key_Version + " -> " + version);
+        log.info(" ===> echo parameter from c->p->c: " + Key_Message + " -> " + message);
+        RpcContext.ContextParameters.get().clear();
     }
 
 }

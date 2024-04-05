@@ -1,10 +1,12 @@
 package cn.cutie.clotrpc.core.provider;
 
+import cn.cutie.clotrpc.core.api.RpcContext;
 import cn.cutie.clotrpc.core.api.RpcException;
 import cn.cutie.clotrpc.core.api.RpcRequest;
 import cn.cutie.clotrpc.core.api.RpcResponse;
 import cn.cutie.clotrpc.core.meta.ProviderMata;
 import cn.cutie.clotrpc.core.utils.TypeUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.MultiValueMap;
 
 import java.lang.reflect.InvocationTargetException;
@@ -13,6 +15,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 public class ProviderInvoker {
 
     // 方法级别的映射关系
@@ -23,6 +26,11 @@ public class ProviderInvoker {
     }
 
     public RpcResponse<Object> invoke(RpcRequest request) {
+        log.debug(" ===> ProviderInvoker.invoke(request:{})", request);
+        if(!request.getParams().isEmpty()) {
+            request.getParams().forEach(RpcContext::setContextParameter);
+        }
+
         RpcResponse<Object> rpcResponse = new RpcResponse<>();
 //        Object bean = skeleton.get(request.getService());
         List<ProviderMata> providerMatas = skeleton.get(request.getService());
@@ -46,7 +54,10 @@ public class ProviderInvoker {
             rpcResponse.setEx(new RpcException(e.getTargetException().getMessage()));
         } catch (IllegalAccessException e) {
             rpcResponse.setEx(new RpcException(e.getMessage()));
+        } finally {
+            RpcContext.ContextParameters.get().clear(); // 防止内存泄露和上下文污染
         }
+        log.debug(" ===> ProviderInvoker.invoke() = {}", rpcResponse);
         return rpcResponse;
     }
 

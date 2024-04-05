@@ -4,9 +4,9 @@ package cn.cutie.clotrpc.core.api;
  * 过滤器
  */
 public interface Filter {
-    RpcResponse preFilter(RpcRequest request);
+    Object preFilter(RpcRequest request);
 
-    RpcResponse postFilter(RpcRequest request, RpcResponse response);
+    Object postFilter(RpcRequest request, RpcResponse response, Object result);
 
 
     // filter链，或者定义filter数组
@@ -15,13 +15,13 @@ public interface Filter {
     // lambda表达式只能表示有一个方法的接口
     Filter Default =  new Filter() {
         @Override
-        public RpcResponse preFilter(RpcRequest request) {
+        public Object preFilter(RpcRequest request) {
             return null;
         }
 
         @Override
-        public RpcResponse postFilter(RpcRequest request, RpcResponse response) {
-            return response;
+        public Object postFilter(RpcRequest request, RpcResponse response, Object result) {
+            return null;
         }
     };
 }
