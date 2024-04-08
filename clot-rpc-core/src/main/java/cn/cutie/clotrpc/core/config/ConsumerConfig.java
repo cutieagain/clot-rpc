@@ -6,7 +6,7 @@ import cn.cutie.clotrpc.core.cluster.RandomLoadBalancer;
 import cn.cutie.clotrpc.core.consumer.ConsumerBootstrap;
 import cn.cutie.clotrpc.core.filter.ParameterFilter;
 import cn.cutie.clotrpc.core.meta.InstanceMeta;
-import cn.cutie.clotrpc.core.registry.ZkRegisterCenter;
+import cn.cutie.clotrpc.core.registry.ZkRegistryCenter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
@@ -69,7 +69,7 @@ public class ConsumerConfig {
     @ConditionalOnMissingBean
     public RegistryCenter consumerRc(){
 //        return new RegistryCenter.StaticRegistryCenter(List.of(servers.split(",")));
-        return new ZkRegisterCenter();
+        return new ZkRegistryCenter();
     }
 
     @Bean

@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  * 集成ZK：zkClinet和官方推荐的curator
  */
 @Slf4j
-public class ZkRegisterCenter implements RegistryCenter {
+public class ZkRegistryCenter implements RegistryCenter {
 
     private CuratorFramework client = null;
 

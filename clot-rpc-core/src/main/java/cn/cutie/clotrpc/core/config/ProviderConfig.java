@@ -1,12 +1,9 @@
 package cn.cutie.clotrpc.core.config;
 
 import cn.cutie.clotrpc.core.api.RegistryCenter;
-import cn.cutie.clotrpc.core.config.AppConfigProperties;
-import cn.cutie.clotrpc.core.config.ProviderConfigProperties;
-import cn.cutie.clotrpc.core.consumer.ConsumerBootstrap;
 import cn.cutie.clotrpc.core.provider.ProviderBootstrap;
 import cn.cutie.clotrpc.core.provider.ProviderInvoker;
-import cn.cutie.clotrpc.core.registry.ZkRegisterCenter;
+import cn.cutie.clotrpc.core.registry.ZkRegistryCenter;
 import cn.cutie.clotrpc.core.transport.SpringBootTransport;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,11 +12,8 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.Order;
-
-import java.util.List;
 
 @Configuration
 @Slf4j
@@ -65,6 +59,6 @@ public class ProviderConfig {
     @Bean
     @ConditionalOnMissingBean
     RegistryCenter providerRc(){
-        return new ZkRegisterCenter();
+        return new ZkRegistryCenter();
     }
 }
