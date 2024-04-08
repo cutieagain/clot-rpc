@@ -1,19 +1,24 @@
 server:
-  port: 8089
+  port: 8088
 clotrpc:
-  providers: http://localhost:8081, http://localhost:8082
-  zkServer: localhost:2182
-  zkRoot: clot-rpc
-
-
-app:
-  id: app1
-  namespace: public
-  env: dev
-  retries: 2
-  timeout: 1000
+#  static:
+#    providers: http://localhost:8081, http://localhost:8082
+  zk:
+    server: localhost:2181
+    root: clot-rpc
+  app:
+    id: app1
+    namespace: public
+    env: dev
+  consumer:
+    retries: 2
+    timeout: 1000
+    grayRatio: 10 # 灰度百分比 0-100
+    faultLimit: 10 # 30s 内10次错误则隔离
+    halfOpenInitialDelay: 10000
+    halfOpenDelay: 60000
 
 logging:
   level:
-    root: info
+    root: error
     cn.cutie.clotrpc: debug

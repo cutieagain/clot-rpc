@@ -2,16 +2,20 @@ server:
   port: 8082
 
 clotrpc:
-  zkServer: localhost:2182
-  zkRoot: clot-rpc
-
-app:
-  id: app1
-  namespace: public
-  env: dev
-  metas: "{dc: 'bj', gray:'false', unit:'B001'}"
+  zk:
+    server: localhost:2181
+    root: clot-rpc
+  app:
+    id: app1
+    namespace: public
+    env: dev
+  provider:
+    metas:
+      dc: bj # 机房
+      gray: false # 是否灰度
+      unit: B001 # 区域
 
 logging:
   level:
-    root: info
-    cn.cutie.clotrpc: debug
+    root: error
+    cn.cutie.clotrpc: info
