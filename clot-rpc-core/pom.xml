@@ -5,13 +5,13 @@
     <parent>
         <groupId>cn.cutie</groupId>
         <artifactId>clot-rpc</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${clotrpc.version}</version>
         <relativePath>../../clot-rpc</relativePath>
 <!--        <relativePath/> &lt;!&ndash; lookup parent from repository &ndash;&gt;-->
     </parent>
 
     <artifactId>clot-rpc-core</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>${clotrpc.version}</version>
     <name>clot-rpc-core</name>
     <description>clot-rpc-core</description>
     <properties>
@@ -58,6 +58,13 @@
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-test</artifactId>
             <version>5.1.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <version>3.2.0</version>
+            <optional>true</optional>
         </dependency>
 
     </dependencies>

@@ -5,11 +5,11 @@
     <parent>
         <groupId>cn.cutie</groupId>
         <artifactId>clot-rpc</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${clotrpc.version}</version>
         <relativePath>../../clot-rpc</relativePath> <!-- lookup parent from repository -->
     </parent>
     <artifactId>clot-rpc-demo-consumer</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>${clotrpc.version}</version>
     <name>clot-rpc-demo-consumer</name>
     <description>clot-rpc-demo-consumer</description>
 
@@ -46,20 +46,20 @@
         <dependency>
             <groupId>cn.cutie</groupId>
             <artifactId>clot-rpc-demo-api</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${clotrpc.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>cn.cutie</groupId>
             <artifactId>clot-rpc-core</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${clotrpc.version}</version>
         </dependency>
 
         <!-- idea里面是可行的，mvn package有时候行有时候不行 -->
         <dependency>
             <groupId>cn.cutie</groupId>
             <artifactId>clot-rpc-demo-provider</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${clotrpc.version}</version>
             <scope>test</scope>
         </dependency>
 

@@ -5,12 +5,12 @@
     <parent>
         <groupId>cn.cutie</groupId>
         <artifactId>clot-rpc</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${clotrpc.version}</version>
         <relativePath>../../clot-rpc</relativePath>
 <!--        <relativePath/> &lt;!&ndash; lookup parent from repository &ndash;&gt;-->
     </parent>
     <artifactId>clot-rpc-demo-api</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>${clotrpc.version}</version>
     <name>clot-rpc-demo-api</name>
     <description>clot-rpc-demo-api</description>
 

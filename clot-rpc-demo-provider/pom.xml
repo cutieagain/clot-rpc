@@ -5,11 +5,11 @@
     <parent>
         <groupId>cn.cutie</groupId>
         <artifactId>clot-rpc</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>${clotrpc.version}</version>
         <relativePath>../../clot-rpc</relativePath> <!-- lookup parent from repository -->
     </parent>
     <artifactId>clot-rpc-demo-provider</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>${clotrpc.version}</version>
     <name>clot-rpc-demo-provider</name>
     <description>clot-rpc-demo-provider</description>
 
@@ -45,12 +45,12 @@
         <dependency>
             <groupId>cn.cutie</groupId>
             <artifactId>clot-rpc-demo-api</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${clotrpc.version}</version>
         </dependency>
         <dependency>
             <groupId>cn.cutie</groupId>
             <artifactId>clot-rpc-core</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${clotrpc.version}</version>
         </dependency>
     </dependencies>
 
