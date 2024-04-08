@@ -10,6 +10,7 @@ import cn.cutie.clotrpc.core.registry.ZkRegisterCenter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -65,6 +66,7 @@ public class ConsumerConfig {
      * @return
      */
     @Bean(initMethod = "start", destroyMethod = "stop")
+    @ConditionalOnMissingBean
     public RegistryCenter consumerRc(){
 //        return new RegistryCenter.StaticRegistryCenter(List.of(servers.split(",")));
         return new ZkRegisterCenter();
